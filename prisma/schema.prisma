@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PointTransactionType {
+  BONUS
+  PENALTY
+  REWARD
+}
+
+model Child {
+  id           String             @id @default(cuid())
+  name         String
+  displayColor String             @default("#2563EB")
+  avatarText   String             @default("")
+  enabled      Boolean            @default(true)
+  sortOrder    Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  transactions PointTransaction[]
+}
+
+model PointItem {
+  id           String                 @id @default(cuid())
+  type         PointTransactionType
+  name         String
+  defaultPoints Int
+  description  String                 @default("")
+  enabled      Boolean                @default(true)
+  sortOrder    Int                    @default(0)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  transactions PointTransaction[]
+
+  @@index([type, enabled, sortOrder])
+}
+
+model PointTransaction {
+  id                String                 @id @default(cuid())
+  childId           String
+  child             Child                  @relation(fields: [childId], references: [id])
+  type              PointTransactionType
+  itemId            String?
+  item              PointItem?             @relation(fields: [itemId], references: [id])
+  itemNameSnapshot  String
+  points            Int
+  note              String                 @default("")
+  occurredAt        DateTime
+  createdByUsername String
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  revisions         TransactionRevision[]
+
+  @@index([childId, occurredAt])
+  @@index([type, occurredAt])
+}
+
+model TransactionRevision {
+  id               String           @id @default(cuid())
+  transactionId    String
+  transaction      PointTransaction @relation(fields: [transactionId], references: [id])
+  beforeData       Json
+  afterData        Json
+  reason           String
+  editedByUsername String
+  createdAt        DateTime         @default(now())
+
+  @@index([transactionId, createdAt])
+}
