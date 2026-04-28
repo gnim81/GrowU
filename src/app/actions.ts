@@ -36,6 +36,29 @@ function optionalInt(formData: FormData, key: string, fallback = 0) {
   return Number.isInteger(value) ? value : fallback;
 }
 
+async function resolveItemBinding(formData: FormData) {
+  const scope = requiredString(formData, "scope");
+
+  if (scope === "ALL") {
+    return null;
+  }
+
+  if (scope !== "CHILD") {
+    throw new Error("scope is invalid.");
+  }
+
+  const childId = requiredString(formData, "bindChildId");
+  const child = await prisma.child.findUnique({
+    where: { id: childId }
+  });
+
+  if (!child) {
+    throw new Error("绑定档案不存在。");
+  }
+
+  return childId;
+}
+
 function checked(formData: FormData, key: string) {
   return formData.get(key) === "on";
 }
@@ -119,6 +142,10 @@ export async function deleteChildAction(formData: FormData) {
   }
 
   await prisma.$transaction(async (tx) => {
+    await tx.pointItem.deleteMany({
+      where: { childId: id }
+    });
+
     await tx.transactionRevision.deleteMany({
       where: { transaction: { childId: id } }
     });
@@ -142,10 +169,12 @@ export async function deleteChildAction(formData: FormData) {
 export async function createItemAction(formData: FormData) {
   await requireUser();
   const type = requiredString(formData, "type") as PointTransactionType;
+  const childId = await resolveItemBinding(formData);
 
   await prisma.pointItem.create({
     data: {
       type,
+      childId,
       name: requiredString(formData, "name"),
       defaultPoints: positiveInt(formData, "defaultPoints"),
       description: optionalString(formData, "description"),
@@ -159,10 +188,12 @@ export async function createItemAction(formData: FormData) {
 
 export async function updateItemAction(formData: FormData) {
   await requireUser();
+  const childId = await resolveItemBinding(formData);
 
   await prisma.pointItem.update({
     where: { id: requiredString(formData, "id") },
     data: {
+      childId,
       name: requiredString(formData, "name"),
       defaultPoints: positiveInt(formData, "defaultPoints"),
       description: optionalString(formData, "description"),
@@ -210,11 +241,16 @@ export async function createTransactionAction(type: PointTransactionType, formDa
 
   const itemId = requiredString(formData, "itemId");
   const item = await prisma.pointItem.findFirst({
-    where: { id: itemId, type, enabled: true }
+    where: {
+      id: itemId,
+      type,
+      enabled: true,
+      OR: [{ childId: null }, { childId }]
+    }
   });
 
   if (!item) {
-    throw new Error("积分项目不存在或已停用。");
+    throw new Error("积分项目不存在、已停用，或不适用于当前档案。");
   }
 
   const points = normalizeSignedPoints(type, positiveInt(formData, "points"));
@@ -242,6 +278,17 @@ export async function createTransactionAction(type: PointTransactionType, formDa
 
   revalidatePath("/");
   revalidatePath("/transactions");
+  revalidatePath("/stats");
+
+  if (type === PointTransactionType.BONUS || type === PointTransactionType.PENALTY) {
+    if (checked(formData, "continueAdding")) {
+      const recordPath = type === PointTransactionType.BONUS ? "/record/bonus" : "/record/penalty";
+      redirect(`${recordPath}?childId=${encodeURIComponent(childId)}`);
+    }
+
+    redirect("/");
+  }
+
   redirect("/transactions");
 }
 
@@ -258,17 +305,21 @@ export async function updateTransactionAction(formData: FormData) {
   }
 
   const type = requiredString(formData, "type") as PointTransactionType;
+  const nextChildId = requiredString(formData, "childId");
   const itemId = requiredString(formData, "itemId");
   const item = await prisma.pointItem.findFirst({
-    where: { id: itemId, type }
+    where: {
+      id: itemId,
+      type,
+      OR: [{ childId: null }, { childId: nextChildId }]
+    }
   });
 
   if (!item) {
-    throw new Error("积分项目不存在。");
+    throw new Error("积分项目不存在，或不适用于当前档案。");
   }
 
   const nextPoints = normalizeSignedPoints(type, positiveInt(formData, "points"));
-  const nextChildId = requiredString(formData, "childId");
   const nextChild = await prisma.child.findUnique({
     where: { id: nextChildId }
   });

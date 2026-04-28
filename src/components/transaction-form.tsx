@@ -1,4 +1,4 @@
-import { PointItem, PointTransactionType } from "@prisma/client";
+import { PointTransactionType } from "@prisma/client";
 import { createTransactionAction } from "@/app/actions";
 import { TransactionChoiceFields } from "@/components/transaction-choice-fields";
 import { Card } from "@/components/ui";
@@ -10,14 +10,16 @@ export function TransactionForm({
   children,
   items,
   selectedChildId,
-  error
+  error,
+  showContinueAdding = false
 }: {
   type: PointTransactionType;
   title: string;
   children: { id: string; name: string }[];
-  items: PointItem[];
+  items: { id: string; name: string; defaultPoints: number; childId: string | null; scopeLabel: string }[];
   selectedChildId?: string;
   error?: string;
+  showContinueAdding?: boolean;
 }) {
   return (
     <Card>
@@ -25,7 +27,7 @@ export function TransactionForm({
       <form action={createTransactionAction.bind(null, type)} className="space-y-4">
         <TransactionChoiceFields
           children={children}
-          items={items.map((item) => ({ id: item.id, name: item.name, defaultPoints: item.defaultPoints }))}
+          items={items}
           selectedChildId={selectedChildId}
         />
         <label className="field">
@@ -36,6 +38,12 @@ export function TransactionForm({
           <span className="label">备注</span>
           <textarea className="input min-h-24" name="note" />
         </label>
+        {showContinueAdding ? (
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input name="continueAdding" type="checkbox" />
+            继续添加
+          </label>
+        ) : null}
         {error === "balance" ? <p className="text-sm text-danger">当前积分不足，无法兑换。</p> : null}
         <button className="btn btn-primary w-full" type="submit">
           提交

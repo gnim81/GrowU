@@ -9,6 +9,8 @@ type ChoiceOption = {
 
 type ItemOption = ChoiceOption & {
   defaultPoints: number;
+  childId: string | null;
+  scopeLabel: string;
 };
 
 function ChoiceTags({
@@ -74,28 +76,43 @@ export function TransactionChoiceFields({
   const [childId, setChildId] = useState(selectedChildId ?? "");
   const [itemId, setItemId] = useState("");
   const [points, setPoints] = useState("");
-  const selectedItem = useMemo(() => items.find((item) => item.id === itemId), [itemId, items]);
+  const filteredItems = useMemo(
+    () => (childId ? items.filter((item) => item.childId === null || item.childId === childId) : []),
+    [childId, items]
+  );
+  const selectedItem = useMemo(() => filteredItems.find((item) => item.id === itemId), [itemId, filteredItems]);
 
   function selectItem(nextItemId: string) {
-    const nextItem = items.find((item) => item.id === nextItemId);
+    const nextItem = filteredItems.find((item) => item.id === nextItemId);
     setItemId(nextItemId);
     setPoints(nextItem ? String(nextItem.defaultPoints) : "");
   }
 
+  function selectChild(nextChildId: string) {
+    setChildId(nextChildId);
+    const stillAvailable = items.some((item) => item.id === itemId && (item.childId === null || item.childId === nextChildId));
+
+    if (!stillAvailable) {
+      setItemId("");
+      setPoints("");
+    }
+  }
+
   return (
     <>
-      <ChoiceTags label="孩子" name="childId" options={children} value={childId} onChange={setChildId} />
+      <ChoiceTags label="孩子" name="childId" options={children} value={childId} onChange={selectChild} />
       <ChoiceTags
         label="项目"
         name="itemId"
-        options={items}
+        options={filteredItems}
         value={itemId}
         onChange={selectItem}
         renderLabel={(option) => {
           const item = option as ItemOption;
-          return `${item.name}（${item.defaultPoints}）`;
+          return `${item.name}（${item.defaultPoints}，${item.scopeLabel}）`;
         }}
       />
+      {childId ? null : <p className="text-sm text-muted">请先选择档案，再选择可用项目。</p>}
       <label className="field">
         <span className="label">实际分值</span>
         <input

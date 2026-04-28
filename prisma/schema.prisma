@@ -28,6 +28,7 @@ model Child {
 model PointItem {
   id           String                 @id @default(cuid())
   type         PointTransactionType
+  childId      String?
   name         String
   defaultPoints Int
   description  String                 @default("")
@@ -37,7 +38,7 @@ model PointItem {
   updatedAt    DateTime               @updatedAt
   transactions PointTransaction[]
 
-  @@index([type, enabled, sortOrder])
+  @@index([type, enabled, childId, sortOrder])
 }
 
 model PointTransaction {
