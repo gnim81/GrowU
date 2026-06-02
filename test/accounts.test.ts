@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   accountCanLogin,
+  assertCanCreateInitialAdmin,
   canDisableAdmin,
   hashPassword,
   isValidUsername,
@@ -112,5 +113,13 @@ describe("account helpers", () => {
     expect(accountCanLogin(account, "correct password")).toBe(true);
     expect(accountCanLogin(account, "wrong password")).toBe(false);
     expect(accountCanLogin({ ...account, enabled: false }, "correct password")).toBe(false);
+  });
+
+  test("assertCanCreateInitialAdmin allows first admin when no accounts exist", () => {
+    expect(() => assertCanCreateInitialAdmin(0)).not.toThrow();
+  });
+
+  test("assertCanCreateInitialAdmin rejects first admin creation when an account exists", () => {
+    expect(() => assertCanCreateInitialAdmin(1)).toThrow("Initial admin already exists.");
   });
 });

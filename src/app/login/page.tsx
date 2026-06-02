@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { loginAction } from "@/app/actions";
 import { hasAnyAccount } from "@/lib/accounts";
 import { getSessionUser } from "@/lib/auth";
@@ -8,6 +9,8 @@ export default async function LoginPage({
 }: {
   searchParams?: Promise<{ error?: string }>;
 }) {
+  await connection();
+
   const [user, query, anyAccount] = await Promise.all([getSessionUser(), searchParams, hasAnyAccount()]);
   const params = query ?? {};
 

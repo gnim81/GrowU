@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { setupAdminAction } from "@/app/actions";
 import { hasAnyAccount } from "@/lib/accounts";
 
 export const dynamic = "force-dynamic";
 
 export default async function SetupPage() {
+  await connection();
+
   if (await hasAnyAccount()) {
     redirect("/");
   }

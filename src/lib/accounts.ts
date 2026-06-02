@@ -6,6 +6,8 @@ import { prisma } from "./prisma";
 const passwordHashIterations = 310000;
 const passwordHashKeyLength = 32;
 const usernamePattern = /^[a-z0-9_][a-z0-9_-]{2,31}$/;
+const initialAdminLockNamespace = 20260603;
+const initialAdminLockKey = 1;
 
 export type AccountRole = "ADMIN" | "PARENT";
 
@@ -99,6 +101,12 @@ export async function hasAnyAccount() {
   return (await accountCount()) > 0;
 }
 
+export function assertCanCreateInitialAdmin(existingAccountCount: number) {
+  if (existingAccountCount > 0) {
+    throw new Error("Initial admin already exists.");
+  }
+}
+
 export async function createInitialAdmin({
   username,
   displayName,
@@ -108,10 +116,6 @@ export async function createInitialAdmin({
   displayName: string;
   password: string;
 }) {
-  if (await hasAnyAccount()) {
-    throw new Error("Initial admin already exists.");
-  }
-
   const account = normalizeAccountInput({
     username,
     displayName,
@@ -131,11 +135,17 @@ export async function createInitialAdmin({
     throw new Error("password is required.");
   }
 
-  return prisma.userAccount.create({
-    data: {
-      ...account,
-      passwordHash: hashPassword(password)
-    }
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${initialAdminLockNamespace}, ${initialAdminLockKey})`;
+    const existingAccountCount = await tx.userAccount.count();
+    assertCanCreateInitialAdmin(existingAccountCount);
+
+    return tx.userAccount.create({
+      data: {
+        ...account,
+        passwordHash: hashPassword(password)
+      }
+    });
   });
 }
 
