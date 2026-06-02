@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createHmac, pbkdf2Sync, timingSafeEqual } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+import { verifyPasswordHash } from "./accounts";
 
 const sessionCookie = "growu_session";
 const sessionMaxAgeSeconds = 60 * 60 * 24 * 14;
@@ -49,6 +51,13 @@ function signPayload(payload: string, secret = getAuthSecret()) {
   return createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
+function signaturesMatch(actualSignature: string, expectedSignature: string) {
+  const actual = Buffer.from(actualSignature);
+  const expected = Buffer.from(expectedSignature);
+
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
 export function createSessionValue(
   user: SessionUser,
   secret = getAuthSecret(),
@@ -70,13 +79,19 @@ export function createSessionValue(
 export function parseSessionValue(value: string, secret = getAuthSecret(), now = Date.now()): SessionUser | null {
   const [payload, signature] = value.split(".");
 
-  if (!payload || !signature || signPayload(payload, secret) !== signature) {
+  if (!payload || !signature || !signaturesMatch(signature, signPayload(payload, secret))) {
     return null;
   }
 
-  const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as
-    | (SessionUser & { expiresAt: number })
-    | null;
+  let parsed: (SessionUser & { expiresAt: number }) | null;
+
+  try {
+    parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as
+      | (SessionUser & { expiresAt: number })
+      | null;
+  } catch {
+    return null;
+  }
 
   if (!parsed || parsed.expiresAt <= now) {
     return null;
@@ -91,19 +106,7 @@ export function parseSessionValue(value: string, secret = getAuthSecret(), now =
 }
 
 export function verifyPassword(password: string, passwordHash: string) {
-  const parts = passwordHash.includes("$") ? passwordHash.split("$") : passwordHash.split(".");
-  const [scheme, iterationsRaw, salt, expectedHash] = parts;
-
-  if (scheme !== "pbkdf2" || !iterationsRaw || !salt || !expectedHash) {
-    return false;
-  }
-
-  const iterations = Number(iterationsRaw);
-  const actualHash = pbkdf2Sync(password, salt, iterations, 32, "sha256").toString("base64url");
-  const expected = Buffer.from(expectedHash);
-  const actual = Buffer.from(actualHash);
-
-  return expected.length === actual.length && timingSafeEqual(expected, actual);
+  return verifyPasswordHash(password, passwordHash);
 }
 
 export async function getSessionUser() {
