@@ -8,6 +8,7 @@ import {
   isValidUsername,
   normalizeAccountInput,
   roleForImportedLegacyAccount,
+  validateAccountMutation,
   verifyPasswordHash
 } from "../src/lib/accounts";
 
@@ -70,6 +71,53 @@ describe("account helpers", () => {
       displayName: "Parent Two",
       role: "PARENT",
       enabled: true
+    });
+  });
+
+  test("validateAccountMutation rejects invalid username", () => {
+    expect(() =>
+      validateAccountMutation({
+        username: "not valid",
+        displayName: "Parent One",
+        password: "password123"
+      })
+    ).toThrow(/Username/);
+  });
+
+  test("validateAccountMutation rejects empty display name", () => {
+    expect(() =>
+      validateAccountMutation({
+        username: "parent_one",
+        displayName: " ",
+        password: "password123"
+      })
+    ).toThrow(/Display name/);
+  });
+
+  test("validateAccountMutation rejects short password when provided", () => {
+    expect(() =>
+      validateAccountMutation({
+        username: "parent_one",
+        displayName: "Parent One",
+        password: "short"
+      })
+    ).toThrow(/Password/);
+  });
+
+  test("validateAccountMutation accepts valid input and returns normalized account fields", () => {
+    expect(
+      validateAccountMutation({
+        username: " Parent_One ",
+        displayName: " Parent One ",
+        role: "ADMIN",
+        enabled: false,
+        password: "password123"
+      })
+    ).toEqual({
+      username: "parent_one",
+      displayName: "Parent One",
+      role: "ADMIN",
+      enabled: false
     });
   });
 

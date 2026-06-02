@@ -18,6 +18,10 @@ export type AccountInput = {
   enabled?: boolean;
 };
 
+export type AccountMutationInput = AccountInput & {
+  password?: string;
+};
+
 export type DisableAdminInput = {
   targetUserId: string;
   currentUserId: string;
@@ -74,6 +78,24 @@ export function normalizeAccountInput(input: AccountInput) {
   };
 }
 
+export function validateAccountMutation(input: AccountMutationInput) {
+  const account = normalizeAccountInput(input);
+
+  if (!isValidUsername(account.username)) {
+    throw new Error("Username is invalid.");
+  }
+
+  if (!account.displayName) {
+    throw new Error("Display name is required.");
+  }
+
+  if (typeof input.password === "string" && input.password.length > 0 && input.password.length < 8) {
+    throw new Error("Password must be at least 8 characters.");
+  }
+
+  return account;
+}
+
 export function canDisableAdmin({
   targetUserId,
   currentUserId,
@@ -95,6 +117,21 @@ export function accountCanLogin(
 
 export async function accountCount() {
   return prisma.userAccount.count();
+}
+
+export async function listAccounts() {
+  return prisma.userAccount.findMany({
+    orderBy: [{ enabled: "desc" }, { role: "asc" }, { username: "asc" }, { createdAt: "asc" }]
+  });
+}
+
+export async function enabledAdminCount() {
+  return prisma.userAccount.count({
+    where: {
+      enabled: true,
+      role: "ADMIN"
+    }
+  });
 }
 
 export async function hasAnyAccount() {

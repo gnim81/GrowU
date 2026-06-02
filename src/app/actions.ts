@@ -3,8 +3,14 @@
 import { PointTransactionType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createInitialAdmin } from "@/lib/accounts";
-import { requireUser, signIn, signOut } from "@/lib/auth";
+import {
+  canDisableAdmin,
+  createInitialAdmin,
+  enabledAdminCount,
+  hashPassword,
+  validateAccountMutation
+} from "@/lib/accounts";
+import { requireAdmin, requireUser, signIn, signOut } from "@/lib/auth";
 import { getChildBalance, normalizeSignedPoints, transactionSnapshot } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
 
@@ -103,6 +109,91 @@ export async function setupAdminAction(formData: FormData) {
 export async function logoutAction() {
   await signOut();
   redirect("/login");
+}
+
+export async function createAccountAction(formData: FormData) {
+  await requireAdmin();
+  const password = requiredString(formData, "password");
+  const account = validateAccountMutation({
+    username: requiredString(formData, "username"),
+    displayName: requiredString(formData, "displayName"),
+    role: optionalString(formData, "role"),
+    enabled: checked(formData, "enabled"),
+    password
+  });
+
+  await prisma.userAccount.create({
+    data: {
+      ...account,
+      passwordHash: hashPassword(password)
+    }
+  });
+
+  revalidatePath("/settings/accounts");
+  redirect("/settings/accounts");
+}
+
+export async function updateAccountAction(formData: FormData) {
+  const user = await requireAdmin();
+  const id = requiredString(formData, "id");
+  const current = await prisma.userAccount.findUnique({
+    where: { id }
+  });
+
+  if (!current) {
+    throw new Error("Account not found.");
+  }
+
+  const account = validateAccountMutation({
+    username: requiredString(formData, "username"),
+    displayName: requiredString(formData, "displayName"),
+    role: optionalString(formData, "role"),
+    enabled: checked(formData, "enabled")
+  });
+  const demotingAdmin = current.role === "ADMIN" && current.enabled && account.role !== "ADMIN";
+  const disablingAdmin = current.role === "ADMIN" && current.enabled && !account.enabled;
+
+  if (demotingAdmin || disablingAdmin) {
+    const adminCount = await enabledAdminCount();
+
+    if (
+      !canDisableAdmin({
+        targetUserId: current.id,
+        currentUserId: user.userId,
+        enabledAdminCount: adminCount
+      })
+    ) {
+      redirect("/settings/accounts?error=lastAdmin");
+    }
+  }
+
+  await prisma.userAccount.update({
+    where: { id },
+    data: account
+  });
+
+  revalidatePath("/settings/accounts");
+  redirect("/settings/accounts");
+}
+
+export async function resetAccountPasswordAction(formData: FormData) {
+  await requireAdmin();
+  const id = requiredString(formData, "id");
+  const password = requiredString(formData, "password");
+
+  if (password.length < 8) {
+    redirect("/settings/accounts?error=password");
+  }
+
+  await prisma.userAccount.update({
+    where: { id },
+    data: {
+      passwordHash: hashPassword(password)
+    }
+  });
+
+  revalidatePath("/settings/accounts");
+  redirect("/settings/accounts");
 }
 
 export async function createChildAction(formData: FormData) {
