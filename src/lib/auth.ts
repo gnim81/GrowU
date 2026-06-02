@@ -13,8 +13,10 @@ export type GrowuAccount = {
 };
 
 export type SessionUser = {
+  userId: string;
   username: string;
   displayName: string;
+  role: "ADMIN" | "PARENT";
 };
 
 function getAuthSecret() {
@@ -43,27 +45,32 @@ export function getAccounts() {
   return accounts.filter((account) => account.enabled !== false);
 }
 
-function signPayload(payload: string) {
-  return createHmac("sha256", getAuthSecret()).update(payload).digest("base64url");
+function signPayload(payload: string, secret = getAuthSecret()) {
+  return createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
-function createSessionValue(user: SessionUser) {
-  const expiresAt = Date.now() + sessionMaxAgeSeconds * 1000;
+export function createSessionValue(
+  user: SessionUser,
+  secret = getAuthSecret(),
+  expiresAt = Date.now() + sessionMaxAgeSeconds * 1000
+) {
   const payload = Buffer.from(
     JSON.stringify({
+      userId: user.userId,
       username: user.username,
       displayName: user.displayName,
+      role: user.role,
       expiresAt
     })
   ).toString("base64url");
 
-  return `${payload}.${signPayload(payload)}`;
+  return `${payload}.${signPayload(payload, secret)}`;
 }
 
-function parseSessionValue(value: string): SessionUser | null {
+export function parseSessionValue(value: string, secret = getAuthSecret(), now = Date.now()): SessionUser | null {
   const [payload, signature] = value.split(".");
 
-  if (!payload || !signature || signPayload(payload) !== signature) {
+  if (!payload || !signature || signPayload(payload, secret) !== signature) {
     return null;
   }
 
@@ -71,13 +78,15 @@ function parseSessionValue(value: string): SessionUser | null {
     | (SessionUser & { expiresAt: number })
     | null;
 
-  if (!parsed || parsed.expiresAt < Date.now()) {
+  if (!parsed || parsed.expiresAt <= now) {
     return null;
   }
 
   return {
+    userId: parsed.userId,
     username: parsed.username,
-    displayName: parsed.displayName
+    displayName: parsed.displayName,
+    role: parsed.role
   };
 }
 
@@ -127,13 +136,22 @@ export async function signIn(username: string, password: string) {
 
   const cookieStore = await cookies();
 
-  cookieStore.set(sessionCookie, createSessionValue(account), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: shouldUseSecureCookie(),
-    maxAge: sessionMaxAgeSeconds,
-    path: "/"
-  });
+  cookieStore.set(
+    sessionCookie,
+    createSessionValue({
+      userId: account.username,
+      username: account.username,
+      displayName: account.displayName,
+      role: "ADMIN"
+    }),
+    {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: shouldUseSecureCookie(),
+      maxAge: sessionMaxAgeSeconds,
+      path: "/"
+    }
+  );
 
   return true;
 }
