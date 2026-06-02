@@ -2,17 +2,11 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-import { verifyPasswordHash } from "./accounts";
+import { accountCanLogin, findLoginAccount, hasAnyAccount } from "./accounts";
+import { prisma } from "./prisma";
 
 const sessionCookie = "growu_session";
 const sessionMaxAgeSeconds = 60 * 60 * 24 * 14;
-
-export type GrowuAccount = {
-  username: string;
-  displayName: string;
-  passwordHash: string;
-  enabled?: boolean;
-};
 
 export type SessionUser = {
   userId: string;
@@ -33,18 +27,6 @@ function getAuthSecret() {
 
 function shouldUseSecureCookie() {
   return process.env.AUTH_COOKIE_SECURE === "true";
-}
-
-export function getAccounts() {
-  const raw = process.env.GROWU_ACCOUNTS;
-
-  if (!raw) {
-    return [];
-  }
-
-  const accounts = JSON.parse(raw) as GrowuAccount[];
-
-  return accounts.filter((account) => account.enabled !== false);
 }
 
 function signPayload(payload: string, secret = getAuthSecret()) {
@@ -105,10 +87,6 @@ export function parseSessionValue(value: string, secret = getAuthSecret(), now =
   };
 }
 
-export function verifyPassword(password: string, passwordHash: string) {
-  return verifyPasswordHash(password, passwordHash);
-}
-
 export async function getSessionUser() {
   const cookieStore = await cookies();
   const value = cookieStore.get(sessionCookie)?.value;
@@ -117,7 +95,26 @@ export async function getSessionUser() {
     return null;
   }
 
-  return parseSessionValue(value);
+  const session = parseSessionValue(value);
+
+  if (!session) {
+    return null;
+  }
+
+  const account = await prisma.userAccount.findUnique({
+    where: { id: session.userId }
+  });
+
+  if (!account?.enabled) {
+    return null;
+  }
+
+  return {
+    userId: account.id,
+    username: account.username,
+    displayName: account.displayName,
+    role: account.role
+  };
 }
 
 export async function requireUser() {
@@ -130,10 +127,26 @@ export async function requireUser() {
   return user;
 }
 
-export async function signIn(username: string, password: string) {
-  const account = getAccounts().find((item) => item.username === username);
+export async function requireAdmin() {
+  const user = await requireUser();
 
-  if (!account || !verifyPassword(password, account.passwordHash)) {
+  if (user.role !== "ADMIN") {
+    redirect("/");
+  }
+
+  return user;
+}
+
+export async function redirectToSetupIfNeeded() {
+  if (!(await hasAnyAccount())) {
+    redirect("/setup");
+  }
+}
+
+export async function signIn(username: string, password: string) {
+  const account = await findLoginAccount(username);
+
+  if (!account || !accountCanLogin(account, password)) {
     return false;
   }
 
@@ -142,10 +155,10 @@ export async function signIn(username: string, password: string) {
   cookieStore.set(
     sessionCookie,
     createSessionValue({
-      userId: account.username,
+      userId: account.id,
       username: account.username,
       displayName: account.displayName,
-      role: "ADMIN"
+      role: account.role
     }),
     {
       httpOnly: true,

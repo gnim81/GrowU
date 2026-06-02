@@ -1,10 +1,12 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  accountCanLogin,
   canDisableAdmin,
   hashPassword,
   isValidUsername,
   normalizeAccountInput,
+  roleForImportedLegacyAccount,
   verifyPasswordHash
 } from "../src/lib/accounts";
 
@@ -92,5 +94,23 @@ describe("account helpers", () => {
         enabledAdminCount: 2
       })
     ).toBe(true);
+  });
+
+  test("roleForImportedLegacyAccount imports the first legacy account as admin", () => {
+    expect(roleForImportedLegacyAccount(0)).toBe("ADMIN");
+    expect(roleForImportedLegacyAccount(1)).toBe("PARENT");
+    expect(roleForImportedLegacyAccount(2)).toBe("PARENT");
+  });
+
+  test("accountCanLogin allows only enabled accounts with matching password hash", () => {
+    const passwordHash = hashPassword("correct password", "login-salt");
+    const account = {
+      passwordHash,
+      enabled: true
+    };
+
+    expect(accountCanLogin(account, "correct password")).toBe(true);
+    expect(accountCanLogin(account, "wrong password")).toBe(false);
+    expect(accountCanLogin({ ...account, enabled: false }, "correct password")).toBe(false);
   });
 });

@@ -3,6 +3,7 @@
 import { PointTransactionType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createInitialAdmin } from "@/lib/accounts";
 import { requireUser, signIn, signOut } from "@/lib/auth";
 import { getChildBalance, normalizeSignedPoints, transactionSnapshot } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
@@ -81,6 +82,21 @@ export async function loginAction(formData: FormData) {
     redirect("/login?error=1");
   }
 
+  redirect("/");
+}
+
+export async function setupAdminAction(formData: FormData) {
+  const username = requiredString(formData, "username");
+  const displayName = requiredString(formData, "displayName");
+  const password = requiredString(formData, "password");
+
+  await createInitialAdmin({
+    username,
+    displayName,
+    password
+  });
+
+  await signIn(username, password);
   redirect("/");
 }
 

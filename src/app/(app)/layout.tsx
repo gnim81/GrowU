@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Home, ListChecks, LogOut, PieChart, Settings, Trophy, Users } from "lucide-react";
 import { logoutAction } from "@/app/actions";
-import { requireUser } from "@/lib/auth";
+import { redirectToSetupIfNeeded, requireUser } from "@/lib/auth";
 
 const navItems = [
   { href: "/", label: "首页", icon: Home },
@@ -15,6 +15,7 @@ const navItems = [
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  await redirectToSetupIfNeeded();
   const user = await requireUser();
 
   return (

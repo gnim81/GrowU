@@ -1,4 +1,7 @@
 import { pbkdf2Sync, randomBytes, timingSafeEqual } from "node:crypto";
+import type { UserAccount } from "@prisma/client";
+
+import { prisma } from "./prisma";
 
 const passwordHashIterations = 310000;
 const passwordHashKeyLength = 32;
@@ -75,4 +78,71 @@ export function canDisableAdmin({
   enabledAdminCount
 }: DisableAdminInput) {
   return targetUserId !== currentUserId && enabledAdminCount > 1;
+}
+
+export function roleForImportedLegacyAccount(index: number): AccountRole {
+  return index === 0 ? "ADMIN" : "PARENT";
+}
+
+export function accountCanLogin(
+  account: Pick<UserAccount, "enabled" | "passwordHash">,
+  password: string
+) {
+  return account.enabled && verifyPasswordHash(password, account.passwordHash);
+}
+
+export async function accountCount() {
+  return prisma.userAccount.count();
+}
+
+export async function hasAnyAccount() {
+  return (await accountCount()) > 0;
+}
+
+export async function createInitialAdmin({
+  username,
+  displayName,
+  password
+}: {
+  username: string;
+  displayName: string;
+  password: string;
+}) {
+  if (await hasAnyAccount()) {
+    throw new Error("Initial admin already exists.");
+  }
+
+  const account = normalizeAccountInput({
+    username,
+    displayName,
+    role: "ADMIN",
+    enabled: true
+  });
+
+  if (!isValidUsername(account.username)) {
+    throw new Error("Username is invalid.");
+  }
+
+  if (!account.displayName) {
+    throw new Error("displayName is required.");
+  }
+
+  if (!password) {
+    throw new Error("password is required.");
+  }
+
+  return prisma.userAccount.create({
+    data: {
+      ...account,
+      passwordHash: hashPassword(password)
+    }
+  });
+}
+
+export async function findLoginAccount(username: string) {
+  return prisma.userAccount.findUnique({
+    where: {
+      username: username.trim().toLowerCase()
+    }
+  });
 }
