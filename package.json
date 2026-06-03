@@ -1,7 +1,6 @@
 {
   "name": "growu",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
@@ -35,5 +34,6 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "vitest": "^4.1.8"
-  }
+  },
+  "license": "MIT"
 }
