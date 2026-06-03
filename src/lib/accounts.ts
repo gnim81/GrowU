@@ -24,6 +24,13 @@ export type AccountMutationInput = AccountInput & {
   password?: string;
 };
 
+export type LegacyAccount = {
+  username: string;
+  displayName: string;
+  passwordHash: string;
+  enabled?: boolean;
+};
+
 export type AccountManagementError = "lastAdmin" | "password" | "duplicate" | "missing";
 
 export type UpdateAccountWithAdminGuardResult =
@@ -144,6 +151,21 @@ export function roleForImportedLegacyAccount(index: number): AccountRole {
   return index === 0 ? "ADMIN" : "PARENT";
 }
 
+export function parseLegacyAccounts(raw: string | undefined) {
+  if (!raw) return [];
+  const parsed = JSON.parse(raw) as LegacyAccount[];
+
+  return parsed
+    .filter((account) => account.enabled !== false)
+    .map((account, index) => ({
+      username: account.username.trim().toLowerCase(),
+      displayName: account.displayName.trim(),
+      passwordHash: account.passwordHash,
+      role: roleForImportedLegacyAccount(index),
+      enabled: true
+    }));
+}
+
 export function accountCanLogin(
   account: Pick<UserAccount, "enabled" | "passwordHash">,
   password: string
@@ -242,6 +264,17 @@ export async function updateAccountWithAdminGuard({
 
 export async function hasAnyAccount() {
   return (await accountCount()) > 0;
+}
+
+export async function importLegacyAccounts(raw: string | undefined) {
+  const accounts = parseLegacyAccounts(raw);
+
+  if (accounts.length === 0) return { imported: 0, skipped: 0 };
+  if (await hasAnyAccount()) return { imported: 0, skipped: accounts.length };
+
+  await prisma.userAccount.createMany({ data: accounts, skipDuplicates: true });
+
+  return { imported: accounts.length, skipped: 0 };
 }
 
 export function assertCanCreateInitialAdmin(existingAccountCount: number) {
