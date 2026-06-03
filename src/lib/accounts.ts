@@ -157,10 +157,17 @@ export function parseLegacyAccounts(raw: string | undefined) {
 
   return parsed
     .filter((account) => account.enabled !== false)
+    .map((account) => ({
+      username: typeof account.username === "string" ? account.username.trim().toLowerCase() : "",
+      displayName: typeof account.displayName === "string" ? account.displayName.trim() : "",
+      passwordHash: typeof account.passwordHash === "string" ? account.passwordHash.trim() : ""
+    }))
+    .filter(
+      (account) =>
+        isValidUsername(account.username) && account.displayName.length > 0 && account.passwordHash.length > 0
+    )
     .map((account, index) => ({
-      username: account.username.trim().toLowerCase(),
-      displayName: account.displayName.trim(),
-      passwordHash: account.passwordHash,
+      ...account,
       role: roleForImportedLegacyAccount(index),
       enabled: true
     }));
@@ -267,14 +274,14 @@ export async function hasAnyAccount() {
 }
 
 export async function importLegacyAccounts(raw: string | undefined) {
+  if (await hasAnyAccount()) return { imported: 0, skipped: 0 };
   const accounts = parseLegacyAccounts(raw);
 
   if (accounts.length === 0) return { imported: 0, skipped: 0 };
-  if (await hasAnyAccount()) return { imported: 0, skipped: accounts.length };
 
-  await prisma.userAccount.createMany({ data: accounts, skipDuplicates: true });
+  const result = await prisma.userAccount.createMany({ data: accounts, skipDuplicates: true });
 
-  return { imported: accounts.length, skipped: 0 };
+  return { imported: result.count, skipped: accounts.length - result.count };
 }
 
 export function assertCanCreateInitialAdmin(existingAccountCount: number) {

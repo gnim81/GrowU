@@ -2,6 +2,7 @@
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+const usernamePattern = /^[a-z0-9_][a-z0-9_-]{2,31}$/;
 
 function roleForImportedLegacyAccount(index) {
   return index === 0 ? "ADMIN" : "PARENT";
@@ -13,10 +14,19 @@ function parseLegacyAccounts(raw) {
 
   return parsed
     .filter((account) => account.enabled !== false)
+    .map((account) => ({
+      username: typeof account.username === "string" ? account.username.trim().toLowerCase() : "",
+      displayName: typeof account.displayName === "string" ? account.displayName.trim() : "",
+      passwordHash: typeof account.passwordHash === "string" ? account.passwordHash.trim() : ""
+    }))
+    .filter(
+      (account) =>
+        usernamePattern.test(account.username) &&
+        account.displayName.length > 0 &&
+        account.passwordHash.length > 0
+    )
     .map((account, index) => ({
-      username: account.username.trim().toLowerCase(),
-      displayName: account.displayName.trim(),
-      passwordHash: account.passwordHash,
+      ...account,
       role: roleForImportedLegacyAccount(index),
       enabled: true
     }));
@@ -35,8 +45,8 @@ try {
         "No enabled GROWU_ACCOUNTS entries found. Start the app and use /setup to create the first admin."
       );
     } else {
-      await prisma.userAccount.createMany({ data: accounts, skipDuplicates: true });
-      console.log(`Imported ${accounts.length} legacy account(s).`);
+      const result = await prisma.userAccount.createMany({ data: accounts, skipDuplicates: true });
+      console.log(`Imported ${result.count} legacy account(s).`);
     }
   }
 } catch (error) {
