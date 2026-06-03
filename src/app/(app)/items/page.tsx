@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PointTransactionType } from "@prisma/client";
 import { Plus } from "lucide-react";
-import { createItemAction, deleteItemAction, updateItemAction } from "@/app/actions";
+import { createItemAction, updateItemAction } from "@/app/actions";
 import { ItemBindingFields } from "@/components/item-binding-fields";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { transactionTypeLabels } from "@/lib/points";
@@ -59,15 +59,12 @@ export default async function ItemsPage({
   const selectedItem = filteredItems.find((item) => item.id === params.itemId) ?? filteredItems[0];
   const isCreating = params.mode === "new" || items.length === 0;
   const defaultType = selectedType || PointTransactionType.BONUS;
-  const selectedItemTransactionCount = selectedItem
-    ? await prisma.pointTransaction.count({ where: { itemId: selectedItem.id } })
-    : 0;
 
   return (
     <>
       <PageHeader
         title="项目管理"
-        description="左侧选择项目，右侧编辑详情。项目停用后不会影响历史流水。"
+        description="左侧选择项目，右侧编辑详情。停用后不再用于新增流水，历史流水继续显示创建时的项目名称快照。"
         action={
           <Link className="btn btn-primary" href={makeItemsHref({ mode: "new" })}>
             <Plus size={16} />
@@ -75,11 +72,6 @@ export default async function ItemsPage({
           </Link>
         }
       />
-      {params.deleted === "1" ? (
-        <Card className="mb-4 border-green-200 bg-green-50">
-          <p className="text-sm text-success">项目已删除。为防止误删，删除下一个项目前请重新勾选确认项。</p>
-        </Card>
-      ) : null}
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <Card className="p-2">
           <form action="/items" className="mb-3 space-y-3 border-b border-line p-2 pb-4">
@@ -193,11 +185,6 @@ export default async function ItemsPage({
           </Card>
         ) : selectedItem ? (
           <Card key={selectedItem.id}>
-            {params.error === "itemDeleteConfirmRequired" ? (
-              <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-danger">
-                删除失败：请勾选全部确认项后再执行删除。
-              </div>
-            ) : null}
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-muted">{transactionTypeLabels[selectedItem.type]}</p>
@@ -244,37 +231,12 @@ export default async function ItemsPage({
                   <input name="enabled" type="checkbox" defaultChecked={selectedItem.enabled} />
                   启用
                 </label>
+                <p className="max-w-xl text-sm text-muted">
+                  取消启用等同于归档：该项目会从新增流水的选项中隐藏，已有流水仍保留并显示当时保存的项目名称快照。
+                </p>
                 <button className="btn btn-secondary" type="submit">
                   更新
                 </button>
-              </div>
-            </form>
-            <form action={deleteItemAction} className="mt-6 border-t border-line pt-4">
-              <input name="id" type="hidden" value={selectedItem.id} />
-              <div className="rounded-md border border-red-200 bg-red-50 p-4">
-                <h3 className="text-sm font-semibold text-danger">危险操作：删除项目</h3>
-                <p className="mt-2 text-sm text-slate-700">
-                  当前有 {selectedItemTransactionCount} 条流水直接引用该项目。删除后不会删除历史流水，但这个项目将从可选列表中移除。
-                </p>
-                <div className="mt-3 space-y-2">
-                  <label className="flex items-start gap-2 text-sm text-slate-800">
-                    <input name="confirm_delete" type="checkbox" />
-                    <span>我确认要删除项目“{selectedItem.name}”。</span>
-                  </label>
-                  <label className="flex items-start gap-2 text-sm text-slate-800">
-                    <input name="confirm_history" type="checkbox" />
-                    <span>我确认历史流水仍会保留，并继续显示当时的项目名称快照。</span>
-                  </label>
-                  <label className="flex items-start gap-2 text-sm text-slate-800">
-                    <input name="confirm_next" type="checkbox" />
-                    <span>我知道删除后页面会自动打开下一个项目，防止误删需要再次勾选确认项。</span>
-                  </label>
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <button className="btn btn-danger" type="submit">
-                    删除项目
-                  </button>
-                </div>
               </div>
             </form>
           </Card>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { createChildAction, deleteChildAction, updateChildAction } from "@/app/actions";
+import { createChildAction, updateChildAction } from "@/app/actions";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { getChildBalance } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
@@ -19,15 +19,12 @@ export default async function ChildrenPage({
   );
   const selectedChild = children.find((child) => child.id === params.childId) ?? children[0];
   const isCreating = params.mode === "new" || children.length === 0;
-  const selectedChildTransactionCount = selectedChild
-    ? await prisma.pointTransaction.count({ where: { childId: selectedChild.id } })
-    : 0;
 
   return (
     <>
       <PageHeader
         title="孩子档案"
-        description="左侧选择档案，右侧编辑详情。停用不会删除历史流水。"
+        description="左侧选择档案，右侧编辑详情。停用后不再出现在默认记分选择中，历史流水和审计记录仍可查看。"
         action={
           <Link className="btn btn-primary" href="/children?mode=new">
             <Plus size={16} />
@@ -94,11 +91,6 @@ export default async function ChildrenPage({
           </Card>
         ) : selectedChild ? (
           <Card key={selectedChild.id}>
-            {params.error === "childDeleteConfirmRequired" ? (
-              <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-danger">
-                删除失败：请勾选全部确认项后再执行删除。
-              </div>
-            ) : null}
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-muted">当前积分</p>
@@ -131,37 +123,12 @@ export default async function ChildrenPage({
                   <input name="enabled" type="checkbox" defaultChecked={selectedChild.enabled} />
                   启用
                 </label>
+                <p className="max-w-xl text-sm text-muted">
+                  取消启用等同于归档：该档案不会出现在新增记录的默认选择中，已存在的流水和审计记录仍会保留并可筛选查看。
+                </p>
                 <button className="btn btn-secondary" type="submit">
                   更新
                 </button>
-              </div>
-            </form>
-            <form action={deleteChildAction} className="mt-6 border-t border-line pt-4">
-              <input name="id" type="hidden" value={selectedChild.id} />
-              <div className="rounded-md border border-red-200 bg-red-50 p-4">
-                <h3 className="text-sm font-semibold text-danger">危险操作：删除档案</h3>
-                <p className="mt-2 text-sm text-slate-700">
-                  当前档案包含 {selectedChildTransactionCount} 条流水。删除后会一并删除该档案的所有流水和修订记录，且不可恢复。
-                </p>
-                <div className="mt-3 space-y-2">
-                  <label className="flex items-start gap-2 text-sm text-slate-800">
-                    <input name="confirm_delete" type="checkbox" />
-                    <span>我确认要删除档案“{selectedChild.name}”。</span>
-                  </label>
-                  <label className="flex items-start gap-2 text-sm text-slate-800">
-                    <input name="confirm_records" type="checkbox" />
-                    <span>我确认要同时删除该档案下的全部流水和修订记录。</span>
-                  </label>
-                  <label className="flex items-start gap-2 text-sm text-slate-800">
-                    <input name="confirm_irreversible" type="checkbox" />
-                    <span>我确认这是不可恢复操作。</span>
-                  </label>
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <button className="btn btn-danger" type="submit">
-                    删除档案
-                  </button>
-                </div>
               </div>
             </form>
           </Card>

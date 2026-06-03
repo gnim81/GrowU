@@ -236,45 +236,6 @@ export async function updateChildAction(formData: FormData) {
   revalidatePath("/children");
 }
 
-export async function deleteChildAction(formData: FormData) {
-  await requireUser();
-
-  const id = requiredString(formData, "id");
-  const confirmations = [
-    checked(formData, "confirm_delete"),
-    checked(formData, "confirm_records"),
-    checked(formData, "confirm_irreversible")
-  ];
-
-  if (confirmations.some((value) => !value)) {
-    redirect(`/children?childId=${id}&error=childDeleteConfirmRequired`);
-  }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.pointItem.deleteMany({
-      where: { childId: id }
-    });
-
-    await tx.transactionRevision.deleteMany({
-      where: { transaction: { childId: id } }
-    });
-
-    await tx.pointTransaction.deleteMany({
-      where: { childId: id }
-    });
-
-    await tx.child.delete({
-      where: { id }
-    });
-  });
-
-  revalidatePath("/");
-  revalidatePath("/children");
-  revalidatePath("/transactions");
-  revalidatePath("/stats");
-  redirect("/children");
-}
-
 export async function createItemAction(formData: FormData) {
   await requireUser();
   const type = requiredString(formData, "type") as PointTransactionType;
@@ -312,29 +273,6 @@ export async function updateItemAction(formData: FormData) {
   });
 
   revalidatePath("/items");
-}
-
-export async function deleteItemAction(formData: FormData) {
-  await requireUser();
-  const id = requiredString(formData, "id");
-  const confirmations = [
-    checked(formData, "confirm_delete"),
-    checked(formData, "confirm_history"),
-    checked(formData, "confirm_next")
-  ];
-
-  if (confirmations.some((value) => !value)) {
-    redirect(`/items?itemId=${id}&error=itemDeleteConfirmRequired`);
-  }
-
-  await prisma.pointItem.delete({
-    where: { id }
-  });
-
-  revalidatePath("/items");
-  revalidatePath("/transactions");
-  revalidatePath("/stats");
-  redirect("/items?deleted=1");
 }
 
 export async function createTransactionAction(type: PointTransactionType, formData: FormData) {

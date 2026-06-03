@@ -58,10 +58,9 @@ GrowU 是一个家庭积分管理 Web App，面向家长使用。核心能力：
 这里集中处理：
 
 - 登录与退出
-- 档案/项目新增、更新、删除
+- 档案/项目新增、更新与停用
 - 流水创建与修改
-- 删除防误删确认
-- 删除后重定向与页面刷新
+- 写入后的页面刷新
 
 后续如新增写操作，优先延续这里的模式，不要把数据库写入逻辑分散到多个页面组件中。
 
@@ -131,7 +130,7 @@ Prisma Schema 在 [prisma/schema.prisma](G:\Workspace\GrowU\prisma\schema.prisma
 - `occurredAt`
 - `createdByUsername`
 
-`itemNameSnapshot` 很关键。项目删除或改名后，历史流水仍依赖这个快照显示原项目名称。
+`itemNameSnapshot` 很关键。项目停用或改名后，历史流水仍依赖这个快照显示创建流水时保存的项目名称。
 
 ### 4.4 `TransactionRevision`
 
@@ -167,12 +166,14 @@ Prisma Schema 在 [prisma/schema.prisma](G:\Workspace\GrowU\prisma\schema.prisma
 - 兑换不允许透支
 - 减分允许导致总分为负
 
-### 5.4 删除规则
+### 5.4 数据保留规则
 
-- 删除档案：允许删除，即使已有流水
-- 删除档案时会删除该档案下全部流水和修订记录
-- 删除项目：不会删除历史流水，历史仍显示 `itemNameSnapshot`
-- 删除档案/项目都要求勾选 3 个确认框，服务端也会校验，不能只依赖前端禁用按钮
+- 孩子档案在正常 UI 中通过 `enabled=false` 停用，不提供硬删除。
+- 停用孩子后，该孩子不再出现在新增流水的默认选择中。
+- 孩子的历史流水与流水修订记录必须保持可查询。
+- 积分项目在正常 UI 中通过 `enabled=false` 停用，不提供硬删除。
+- 停用项目后，该项目不再出现在新增流水的项目选择中。
+- 历史流水显示项目名称时依赖 `PointTransaction.itemNameSnapshot`，不要改成只依赖实时 `PointItem.name`。
 
 ### 5.5 趋势图规则
 
@@ -254,14 +255,14 @@ Prisma Schema 在 [prisma/schema.prisma](G:\Workspace\GrowU\prisma\schema.prisma
 - 密码哈希是否是 `pbkdf2.iterations.salt.hash`
 - 是否误用了包含 `$` 的旧格式
 
-### 8.5 删除项目后历史流水显示异常
+### 8.5 停用或改名项目后历史流水显示异常
 
 当前正确行为：
 
 - 历史流水不依赖 `PointItem.name`
 - 依赖 `PointTransaction.itemNameSnapshot`
 
-如果以后删除项目后历史流水名称丢失，说明有代码错误地改成了实时 join 项目名。
+如果以后停用或改名项目后历史流水名称变化或丢失，说明有代码错误地改成了实时 join 项目名。
 
 ## 9. AI 工具扩展建议
 
@@ -269,6 +270,6 @@ Prisma Schema 在 [prisma/schema.prisma](G:\Workspace\GrowU\prisma\schema.prisma
 
 - 先读本文档，再读 [src/app/actions.ts](G:\Workspace\GrowU\src\app\actions.ts)、[prisma/schema.prisma](G:\Workspace\GrowU\prisma\schema.prisma)、[src/app/(app)/transactions/page.tsx](G:\Workspace\GrowU\src\app\(app)\transactions\page.tsx)
 - 做 UI 改动前，确认是否会影响移动端底部导航和标签式选择
-- 做删除逻辑改动前，先确认是否会破坏流水历史和审计
+- 做数据保留逻辑改动前，先确认是否会破坏流水历史和审计
 - 做图表改动前，先确认是“累计值”还是“区间增量”，两者语义不同
 - 做认证改动前，先确认是否仍需支持局域网手机 HTTP 调试
