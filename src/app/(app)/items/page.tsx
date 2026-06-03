@@ -12,7 +12,7 @@ const typeOptions = Object.values(PointTransactionType);
 export default async function ItemsPage({
   searchParams
 }: {
-  searchParams?: Promise<{ itemId?: string; mode?: string; type?: string; bind?: string; error?: string; deleted?: string }>;
+  searchParams?: Promise<{ itemId?: string; mode?: string; type?: string; bind?: string; error?: string }>;
 }) {
   const params = (await searchParams) ?? {};
   const [items, children] = await Promise.all([
