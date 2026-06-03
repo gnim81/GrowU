@@ -1,5 +1,5 @@
 import { pbkdf2Sync, randomBytes, timingSafeEqual } from "node:crypto";
-import type { UserAccount } from "@prisma/client";
+import { Prisma, type UserAccount } from "@prisma/client";
 
 import { prisma } from "./prisma";
 
@@ -8,6 +8,8 @@ const passwordHashKeyLength = 32;
 const usernamePattern = /^[a-z0-9_][a-z0-9_-]{2,31}$/;
 const initialAdminLockNamespace = 20260603;
 const initialAdminLockKey = 1;
+const accountAdminGuardLockNamespace = 20260603;
+const accountAdminGuardLockKey = 2;
 
 export type AccountRole = "ADMIN" | "PARENT";
 
@@ -22,10 +24,23 @@ export type AccountMutationInput = AccountInput & {
   password?: string;
 };
 
+export type AccountManagementError = "lastAdmin" | "password" | "duplicate" | "missing";
+
+export type UpdateAccountWithAdminGuardResult =
+  | { ok: true }
+  | { ok: false; error: Extract<AccountManagementError, "lastAdmin" | "duplicate" | "missing"> };
+
 export type DisableAdminInput = {
   targetUserId: string;
   currentUserId: string;
   enabledAdminCount: number;
+};
+
+export type AdminChangeInput = {
+  currentRole: AccountRole;
+  currentEnabled: boolean;
+  nextRole: AccountRole;
+  nextEnabled: boolean;
 };
 
 export function hashPassword(password: string, salt = randomBytes(16).toString("base64url")) {
@@ -104,6 +119,23 @@ export function canDisableAdmin({
   return targetUserId !== currentUserId && enabledAdminCount > 1;
 }
 
+export function shouldGuardAdminChange({
+  currentRole,
+  currentEnabled,
+  nextRole,
+  nextEnabled
+}: AdminChangeInput) {
+  return currentRole === "ADMIN" && currentEnabled && (nextRole !== "ADMIN" || !nextEnabled);
+}
+
+export function accountManagementErrorHref(error: AccountManagementError) {
+  return `/settings/accounts?error=${error}`;
+}
+
+function isPrismaKnownRequestError(error: unknown, code: string) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === code;
+}
+
 export function roleForImportedLegacyAccount(index: number): AccountRole {
   return index === 0 ? "ADMIN" : "PARENT";
 }
@@ -130,6 +162,73 @@ export async function enabledAdminCount() {
     where: {
       enabled: true,
       role: "ADMIN"
+    }
+  });
+}
+
+export async function updateAccountWithAdminGuard({
+  id,
+  currentUserId,
+  account
+}: {
+  id: string;
+  currentUserId: string;
+  account: ReturnType<typeof normalizeAccountInput>;
+}): Promise<UpdateAccountWithAdminGuardResult> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${accountAdminGuardLockNamespace}, ${accountAdminGuardLockKey})`;
+
+    const current = await tx.userAccount.findUnique({
+      where: { id }
+    });
+
+    if (!current) {
+      return { ok: false, error: "missing" };
+    }
+
+    if (
+      shouldGuardAdminChange({
+        currentRole: current.role,
+        currentEnabled: current.enabled,
+        nextRole: account.role,
+        nextEnabled: account.enabled
+      })
+    ) {
+      const adminCount = await tx.userAccount.count({
+        where: {
+          enabled: true,
+          role: "ADMIN"
+        }
+      });
+
+      if (
+        !canDisableAdmin({
+          targetUserId: current.id,
+          currentUserId,
+          enabledAdminCount: adminCount
+        })
+      ) {
+        return { ok: false, error: "lastAdmin" };
+      }
+    }
+
+    try {
+      await tx.userAccount.update({
+        where: { id },
+        data: account
+      });
+
+      return { ok: true };
+    } catch (error) {
+      if (isPrismaKnownRequestError(error, "P2002")) {
+        return { ok: false, error: "duplicate" };
+      }
+
+      if (isPrismaKnownRequestError(error, "P2025")) {
+        return { ok: false, error: "missing" };
+      }
+
+      throw error;
     }
   });
 }

@@ -1,13 +1,14 @@
 "use server";
 
 import { PointTransactionType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
-  canDisableAdmin,
+  accountManagementErrorHref,
   createInitialAdmin,
-  enabledAdminCount,
   hashPassword,
+  updateAccountWithAdminGuard,
   validateAccountMutation
 } from "@/lib/accounts";
 import { requireAdmin, requireUser, signIn, signOut } from "@/lib/auth";
@@ -81,6 +82,10 @@ function dateTime(formData: FormData, key: string) {
   return value;
 }
 
+function isPrismaKnownRequestError(error: unknown, code: string) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === code;
+}
+
 export async function loginAction(formData: FormData) {
   const ok = await signIn(requiredString(formData, "username"), requiredString(formData, "password"));
 
@@ -122,12 +127,20 @@ export async function createAccountAction(formData: FormData) {
     password
   });
 
-  await prisma.userAccount.create({
-    data: {
-      ...account,
-      passwordHash: hashPassword(password)
+  try {
+    await prisma.userAccount.create({
+      data: {
+        ...account,
+        passwordHash: hashPassword(password)
+      }
+    });
+  } catch (error) {
+    if (isPrismaKnownRequestError(error, "P2002")) {
+      redirect(accountManagementErrorHref("duplicate"));
     }
-  });
+
+    throw error;
+  }
 
   revalidatePath("/settings/accounts");
   redirect("/settings/accounts");
@@ -136,41 +149,22 @@ export async function createAccountAction(formData: FormData) {
 export async function updateAccountAction(formData: FormData) {
   const user = await requireAdmin();
   const id = requiredString(formData, "id");
-  const current = await prisma.userAccount.findUnique({
-    where: { id }
-  });
-
-  if (!current) {
-    throw new Error("Account not found.");
-  }
-
   const account = validateAccountMutation({
     username: requiredString(formData, "username"),
     displayName: requiredString(formData, "displayName"),
     role: optionalString(formData, "role"),
     enabled: checked(formData, "enabled")
   });
-  const demotingAdmin = current.role === "ADMIN" && current.enabled && account.role !== "ADMIN";
-  const disablingAdmin = current.role === "ADMIN" && current.enabled && !account.enabled;
 
-  if (demotingAdmin || disablingAdmin) {
-    const adminCount = await enabledAdminCount();
-
-    if (
-      !canDisableAdmin({
-        targetUserId: current.id,
-        currentUserId: user.userId,
-        enabledAdminCount: adminCount
-      })
-    ) {
-      redirect("/settings/accounts?error=lastAdmin");
-    }
-  }
-
-  await prisma.userAccount.update({
-    where: { id },
-    data: account
+  const result = await updateAccountWithAdminGuard({
+    id,
+    currentUserId: user.userId,
+    account
   });
+
+  if (!result.ok) {
+    redirect(accountManagementErrorHref(result.error));
+  }
 
   revalidatePath("/settings/accounts");
   redirect("/settings/accounts");
@@ -185,12 +179,20 @@ export async function resetAccountPasswordAction(formData: FormData) {
     redirect("/settings/accounts?error=password");
   }
 
-  await prisma.userAccount.update({
-    where: { id },
-    data: {
-      passwordHash: hashPassword(password)
+  try {
+    await prisma.userAccount.update({
+      where: { id },
+      data: {
+        passwordHash: hashPassword(password)
+      }
+    });
+  } catch (error) {
+    if (isPrismaKnownRequestError(error, "P2025")) {
+      redirect(accountManagementErrorHref("missing"));
     }
-  });
+
+    throw error;
+  }
 
   revalidatePath("/settings/accounts");
   redirect("/settings/accounts");

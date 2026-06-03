@@ -2,12 +2,14 @@ import { describe, expect, test } from "vitest";
 
 import {
   accountCanLogin,
+  accountManagementErrorHref,
   assertCanCreateInitialAdmin,
   canDisableAdmin,
   hashPassword,
   isValidUsername,
   normalizeAccountInput,
   roleForImportedLegacyAccount,
+  shouldGuardAdminChange,
   validateAccountMutation,
   verifyPasswordHash
 } from "../src/lib/accounts";
@@ -143,6 +145,67 @@ describe("account helpers", () => {
         enabledAdminCount: 2
       })
     ).toBe(true);
+  });
+
+  test("shouldGuardAdminChange detects enabled admins becoming non-admin or disabled", () => {
+    expect(
+      shouldGuardAdminChange({
+        currentRole: "ADMIN",
+        currentEnabled: true,
+        nextRole: "PARENT",
+        nextEnabled: true
+      })
+    ).toBe(true);
+    expect(
+      shouldGuardAdminChange({
+        currentRole: "ADMIN",
+        currentEnabled: true,
+        nextRole: "ADMIN",
+        nextEnabled: false
+      })
+    ).toBe(true);
+    expect(
+      shouldGuardAdminChange({
+        currentRole: "ADMIN",
+        currentEnabled: true,
+        nextRole: "PARENT",
+        nextEnabled: false
+      })
+    ).toBe(true);
+  });
+
+  test("shouldGuardAdminChange ignores changes that do not remove an enabled admin", () => {
+    expect(
+      shouldGuardAdminChange({
+        currentRole: "ADMIN",
+        currentEnabled: true,
+        nextRole: "ADMIN",
+        nextEnabled: true
+      })
+    ).toBe(false);
+    expect(
+      shouldGuardAdminChange({
+        currentRole: "ADMIN",
+        currentEnabled: false,
+        nextRole: "PARENT",
+        nextEnabled: false
+      })
+    ).toBe(false);
+    expect(
+      shouldGuardAdminChange({
+        currentRole: "PARENT",
+        currentEnabled: true,
+        nextRole: "PARENT",
+        nextEnabled: false
+      })
+    ).toBe(false);
+  });
+
+  test("accountManagementErrorHref maps known account errors to settings redirects", () => {
+    expect(accountManagementErrorHref("lastAdmin")).toBe("/settings/accounts?error=lastAdmin");
+    expect(accountManagementErrorHref("password")).toBe("/settings/accounts?error=password");
+    expect(accountManagementErrorHref("duplicate")).toBe("/settings/accounts?error=duplicate");
+    expect(accountManagementErrorHref("missing")).toBe("/settings/accounts?error=missing");
   });
 
   test("roleForImportedLegacyAccount imports the first legacy account as admin", () => {

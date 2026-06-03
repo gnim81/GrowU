@@ -30,6 +30,16 @@ export default async function AccountsPage({
           <p className="text-sm text-danger">密码至少需要 8 个字符。</p>
         </Card>
       ) : null}
+      {params.error === "duplicate" ? (
+        <Card className="mb-4 border-red-200 bg-red-50">
+          <p className="text-sm text-danger">用户名已存在，请换一个用户名后重试。</p>
+        </Card>
+      ) : null}
+      {params.error === "missing" ? (
+        <Card className="mb-4 border-red-200 bg-red-50">
+          <p className="text-sm text-danger">账号不存在或已被其他人删除，请刷新后重试。</p>
+        </Card>
+      ) : null}
       <div className="grid gap-4 xl:grid-cols-[340px_1fr]">
         <Card>
           <h2 className="mb-4 text-lg font-semibold">新增账号</h2>
