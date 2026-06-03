@@ -12,8 +12,13 @@ import {
   validateAccountMutation
 } from "@/lib/accounts";
 import { requireAdmin, requireUser, signIn, signOut } from "@/lib/auth";
-import { getChildBalance, normalizeSignedPoints, transactionSnapshot } from "@/lib/points";
+import { getChildBalance, normalizeSignedPoints } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
+import {
+  canApplyTransaction,
+  createRevisionSnapshot,
+  normalizeTransactionInput
+} from "@/lib/transactions";
 
 function requiredString(formData: FormData, key: string) {
   const value = String(formData.get(key) ?? "").trim();
@@ -303,22 +308,30 @@ export async function createTransactionAction(type: PointTransactionType, formDa
   const points = normalizeSignedPoints(type, positiveInt(formData, "points"));
 
   if (type === PointTransactionType.REWARD) {
-    const balance = await getChildBalance(childId);
+    const result = canApplyTransaction({
+      type,
+      balanceBefore: await getChildBalance(childId),
+      signedPoints: points
+    });
 
-    if (balance + points < 0) {
+    if (!result.ok) {
       redirect("/rewards/redeem?error=balance");
     }
   }
 
+  const transactionInput = normalizeTransactionInput({
+    childId,
+    type,
+    itemId,
+    itemNameSnapshot: item.name,
+    points,
+    note: optionalString(formData, "note"),
+    occurredAt: dateTime(formData, "occurredAt")
+  });
+
   await prisma.pointTransaction.create({
     data: {
-      childId,
-      type,
-      itemId,
-      itemNameSnapshot: item.name,
-      points,
-      note: optionalString(formData, "note"),
-      occurredAt: dateTime(formData, "occurredAt"),
+      ...transactionInput,
       createdByUsername: user.username
     }
   });
@@ -376,14 +389,27 @@ export async function updateTransactionAction(formData: FormData) {
   }
 
   if (type === PointTransactionType.REWARD) {
-    const balanceWithoutCurrent = await getChildBalance(nextChildId, id);
+    const result = canApplyTransaction({
+      type,
+      balanceBefore: await getChildBalance(nextChildId, id),
+      signedPoints: nextPoints
+    });
 
-    if (balanceWithoutCurrent + nextPoints < 0) {
+    if (!result.ok) {
       redirect(`/transactions/${id}?error=balance`);
     }
   }
 
-  const afterData = {
+  const beforeData = normalizeTransactionInput({
+    childId: current.childId,
+    type: current.type,
+    itemId: current.itemId as string,
+    itemNameSnapshot: current.itemNameSnapshot,
+    points: current.points,
+    note: current.note,
+    occurredAt: current.occurredAt
+  });
+  const afterData = normalizeTransactionInput({
     childId: nextChildId,
     type,
     itemId,
@@ -391,7 +417,7 @@ export async function updateTransactionAction(formData: FormData) {
     points: nextPoints,
     note: optionalString(formData, "note"),
     occurredAt: dateTime(formData, "occurredAt")
-  };
+  });
 
   await prisma.$transaction(async (tx) => {
     await tx.pointTransaction.update({
@@ -402,8 +428,8 @@ export async function updateTransactionAction(formData: FormData) {
     await tx.transactionRevision.create({
       data: {
         transactionId: id,
-        beforeData: transactionSnapshot(current),
-        afterData: transactionSnapshot(afterData),
+        beforeData: createRevisionSnapshot(beforeData),
+        afterData: createRevisionSnapshot(afterData),
         reason,
         editedByUsername: user.username
       }
