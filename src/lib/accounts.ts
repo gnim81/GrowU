@@ -82,6 +82,10 @@ export function isValidUsername(username: string) {
   return usernamePattern.test(username);
 }
 
+export function accountAdvisoryLockKey(namespace: number, key: number) {
+  return (BigInt(namespace) << BigInt(32)) | BigInt(key);
+}
+
 export function normalizeAccountInput(input: AccountInput) {
   const role: AccountRole = input.role === "ADMIN" || input.role === "PARENT" ? input.role : "PARENT";
 
@@ -176,7 +180,10 @@ export async function updateAccountWithAdminGuard({
   account: ReturnType<typeof normalizeAccountInput>;
 }): Promise<UpdateAccountWithAdminGuardResult> {
   return prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${accountAdminGuardLockNamespace}, ${accountAdminGuardLockKey})`;
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${accountAdvisoryLockKey(
+      accountAdminGuardLockNamespace,
+      accountAdminGuardLockKey
+    )})`;
 
     const current = await tx.userAccount.findUnique({
       where: { id }
@@ -272,7 +279,10 @@ export async function createInitialAdmin({
   }
 
   return prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${initialAdminLockNamespace}, ${initialAdminLockKey})`;
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${accountAdvisoryLockKey(
+      initialAdminLockNamespace,
+      initialAdminLockKey
+    )})`;
     const existingAccountCount = await tx.userAccount.count();
     assertCanCreateInitialAdmin(existingAccountCount);
 

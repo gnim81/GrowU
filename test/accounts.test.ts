@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  accountAdvisoryLockKey,
   accountCanLogin,
   accountManagementErrorHref,
   assertCanCreateInitialAdmin,
@@ -15,6 +16,20 @@ import {
 } from "../src/lib/accounts";
 
 describe("account helpers", () => {
+  test("accountAdvisoryLockKey returns a bigint", () => {
+    expect(typeof accountAdvisoryLockKey(20260603, 1)).toBe("bigint");
+  });
+
+  test("accountAdvisoryLockKey produces distinct keys for distinct advisory lock keys", () => {
+    expect(accountAdvisoryLockKey(20260603, 1)).not.toBe(accountAdvisoryLockKey(20260603, 2));
+  });
+
+  test("accountAdvisoryLockKey combines namespace and key into a stable bigint", () => {
+    expect(accountAdvisoryLockKey(20260603, 1)).toBe(
+      (BigInt(20260603) << BigInt(32)) | BigInt(1)
+    );
+  });
+
   test("hashPassword creates a verifiable pbkdf2 hash with optional salt", () => {
     const passwordHash = hashPassword("correct horse battery staple", "fixed-salt");
 
