@@ -1,16 +1,11 @@
 import { PointTransactionType } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth";
+import { buildTransactionsCsv } from "@/lib/csv";
 import { parseDateRange } from "@/lib/date-range";
-import { transactionTypeLabels } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-
-function escapeCsv(value: unknown) {
-  const text = String(value ?? "");
-  return `"${text.replaceAll('"', '""')}"`;
-}
 
 export async function GET(request: NextRequest) {
   await requireUser();
@@ -32,22 +27,19 @@ export async function GET(request: NextRequest) {
     orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }]
   });
 
-  const rows = [
-    ["孩子", "日期", "类型", "项目", "分值", "备注", "创建人", "创建时间"],
-    ...transactions.map((transaction) => [
-      transaction.child.name,
-      transaction.occurredAt.toISOString(),
-      transactionTypeLabels[transaction.type],
-      transaction.itemNameSnapshot,
-      transaction.points,
-      transaction.note,
-      transaction.createdByUsername,
-      transaction.createdAt.toISOString()
-    ])
-  ];
-  const csv = `\uFEFF${rows.map((row) => row.map(escapeCsv).join(",")).join("\n")}`;
+  const csv = buildTransactionsCsv(
+    transactions.map((transaction) => ({
+      childName: transaction.child.name,
+      type: transaction.type,
+      itemNameSnapshot: transaction.itemNameSnapshot,
+      points: transaction.points,
+      note: transaction.note,
+      occurredAt: transaction.occurredAt,
+      createdByUsername: transaction.createdByUsername
+    }))
+  );
 
-  return new Response(csv, {
+  return new Response(`\uFEFF${csv}`, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": 'attachment; filename="growu-transactions.csv"'
