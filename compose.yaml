@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: growu
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-postgres-password}
+      POSTGRES_DB: growu
+    volumes:
+      - growu-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U growu -d growu"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://growu:${POSTGRES_PASSWORD:-change-this-postgres-password}@db:5432/growu?schema=public
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      GROWU_ACCOUNTS: ${GROWU_ACCOUNTS:-}
+    ports:
+      - "${GROWU_PORT:-3000}:3000"
+    command: >
+      sh -c "npm run prisma:deploy &&
+             npm run migrate:legacy-accounts &&
+             npm run start -- --hostname 0.0.0.0 --port 3000"
+
+volumes:
+  growu-postgres:
