@@ -4,6 +4,7 @@ import {
   canApplyTransaction,
   createRevisionSnapshot,
   normalizeTransactionInput,
+  preserveTransactionInput,
   type TransactionInput
 } from "../src/lib/transactions";
 
@@ -51,6 +52,25 @@ describe("normalizeTransactionInput", () => {
     expect(normalizeTransactionInput(input)).toEqual({
       ...input,
       note: "Practice note"
+    });
+  });
+});
+
+describe("preserveTransactionInput", () => {
+  it("preserves stored note whitespace and nullable item id for before snapshots", () => {
+    const input = {
+      ...transactionInput({ note: "  Stored note  " }),
+      itemId: null
+    };
+
+    expect(createRevisionSnapshot(preserveTransactionInput(input))).toEqual({
+      childId: "child-1",
+      type: "BONUS",
+      itemId: null,
+      itemNameSnapshot: "Daily reading",
+      points: 5,
+      note: "  Stored note  ",
+      occurredAt: "2026-06-02T12:00:00.000Z"
     });
   });
 });

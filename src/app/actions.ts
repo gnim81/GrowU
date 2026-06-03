@@ -17,7 +17,8 @@ import { prisma } from "@/lib/prisma";
 import {
   canApplyTransaction,
   createRevisionSnapshot,
-  normalizeTransactionInput
+  normalizeTransactionInput,
+  preserveTransactionInput
 } from "@/lib/transactions";
 
 function requiredString(formData: FormData, key: string) {
@@ -400,10 +401,10 @@ export async function updateTransactionAction(formData: FormData) {
     }
   }
 
-  const beforeData = normalizeTransactionInput({
+  const beforeData = preserveTransactionInput({
     childId: current.childId,
     type: current.type,
-    itemId: current.itemId as string,
+    itemId: current.itemId,
     itemNameSnapshot: current.itemNameSnapshot,
     points: current.points,
     note: current.note,

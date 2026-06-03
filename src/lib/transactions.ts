@@ -10,6 +10,10 @@ export interface TransactionInput {
   occurredAt: Date;
 }
 
+export type RevisionSnapshotInput = Omit<TransactionInput, "itemId"> & {
+  itemId: string | null;
+};
+
 export function canApplyTransaction({
   type,
   balanceBefore,
@@ -33,7 +37,13 @@ export function normalizeTransactionInput(input: TransactionInput): TransactionI
   };
 }
 
-export function createRevisionSnapshot(input: TransactionInput) {
+export function preserveTransactionInput(input: RevisionSnapshotInput): RevisionSnapshotInput {
+  return {
+    ...input
+  };
+}
+
+export function createRevisionSnapshot(input: RevisionSnapshotInput) {
   return {
     childId: input.childId,
     type: input.type,
