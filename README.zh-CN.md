@@ -1,10 +1,10 @@
-# GrowU
+# 成长优册（GrowU）
 
 > [English](README.md) | [简体中文](README.zh-CN.md)
 >
-> 其他文档：[贡献指南](CONTRIBUTING.zh-CN.md) · [安全策略](SECURITY.zh-CN.md) · [Docker 部署](docs/docker-deployment.zh-CN.md) · [云部署](docs/cloud-deployment.zh-CN.md) · [升级指南](docs/upgrading.zh-CN.md) · [本地开发环境](docs/local-dev-setup.zh-CN.md) · [开发者指南](docs/developer-guide.zh-CN.md) · [GrowU V1 规划](docs/growu-v1-plan.zh-CN.md)
+> 其他文档：[贡献指南](CONTRIBUTING.zh-CN.md) · [安全策略](SECURITY.zh-CN.md) · [Docker 部署](docs/docker-deployment.zh-CN.md) · [云部署](docs/cloud-deployment.zh-CN.md) · [升级指南](docs/upgrading.zh-CN.md) · [本地开发环境](docs/local-dev-setup.zh-CN.md) · [开发者指南](docs/developer-guide.zh-CN.md) · [成长优册（GrowU） V1 规划](docs/growu-v1-plan.zh-CN.md)
 
-GrowU 是一个面向孩子的正向强化进度与积分追踪工具。家长或监护人可管理孩子档案、定义积分项目、记录奖励或惩罚事件、兑换奖励、查看交易历史以及导出 CSV 报表，所有历史数据均得以保留。
+成长优册（GrowU） 是一个面向孩子的正向强化进度与积分追踪工具。家长或监护人可管理孩子档案、定义积分项目、记录奖励或惩罚事件、兑换奖励、查看交易历史以及导出 CSV 报表，所有历史数据均得以保留。
 
 本仓库为公开发布的英文草稿。维护者计划后续发布中文翻译文档。
 
@@ -95,11 +95,11 @@ npm run start
 - [升级指南](docs/upgrading.zh-CN.md)
 - [本地开发环境搭建](docs/local-dev-setup.zh-CN.md)
 - [开发者指南](docs/developer-guide.zh-CN.md)
-- [GrowU V1 规划](docs/growu-v1-plan.zh-CN.md)
+- [成长优册（GrowU） V1 规划](docs/growu-v1-plan.zh-CN.md)
 
 ## 账户说明
 
-- GrowU 现在使用基于数据库的 `UserAccount` 记录。
+- 成长优册（GrowU） 现在使用基于数据库的 `UserAccount` 记录。
 - 当系统中没有任何账户时，通过 `/setup` 创建第一个账户。
 - 管理员账户管理可在 `/settings/accounts` 进行。
 - 请始终保持至少有一个启用的管理员账户。

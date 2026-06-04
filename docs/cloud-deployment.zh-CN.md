@@ -4,7 +4,7 @@
 
 # 云部署
 
-本文档介绍如何在云虚拟机或裸机上以非 Docker 方式部署 GrowU。示例使用 Ubuntu、Node.js、PostgreSQL、systemd 和 lighttpd，但同一应用可运行在任何能将请求转发至 Node.js 进程的反向代理之后。
+本文档介绍如何在云虚拟机或裸机上以非 Docker 方式部署 成长优册（GrowU）。示例使用 Ubuntu、Node.js、PostgreSQL、systemd 和 lighttpd，但同一应用可运行在任何能将请求转发至 Node.js 进程的反向代理之后。
 
 ## 部署模型
 
@@ -148,7 +148,7 @@ sudo -u growu npm run migrate:legacy-accounts
 
 全新安装应跳过导入，通过 `/setup` 创建首个管理员。
 
-## 使用 systemd 运行 GrowU
+## 使用 systemd 运行 成长优册（GrowU）
 
 创建 `/etc/systemd/system/growu.service`：
 
@@ -248,7 +248,7 @@ sudo systemctl reload lighttpd
 在 HTTPS 环境下运行时：
 
 - 设置 `AUTH_COOKIE_SECURE="true"`
-- 编辑 `.env` 后重启 GrowU 服务
+- 编辑 `.env` 后重启 成长优册（GrowU） 服务
 
 ## 首次运行的账户设置
 
@@ -259,7 +259,7 @@ sudo systemctl reload lighttpd
 3. 在 `/login` 登录
 4. 在 `/settings/accounts` 管理其他账户
 
-GrowU 强制要求至少有一个启用的管理员账户。
+成长优册（GrowU） 强制要求至少有一个启用的管理员账户。
 
 ## 更新应用
 

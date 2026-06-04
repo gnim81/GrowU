@@ -2,9 +2,9 @@
 >
 > [README](../README.zh-CN.md) · [Docker 部署](docker-deployment.zh-CN.md) · [云部署](cloud-deployment.zh-CN.md) · [本地开发环境](local-dev-setup.zh-CN.md)
 
-# 升级 GrowU
+# 升级 成长优册（GrowU）
 
-本文档适用于正在迁移到当前开源发布加固分支的现有 GrowU 部署。
+本文档适用于正在迁移到当前开源发布加固分支的现有 成长优册（GrowU） 部署。
 
 ## 开始之前
 
@@ -17,7 +17,7 @@
 
 ## 升级概览
 
-当前 GrowU 使用基于数据库的 `UserAccount` 记录。旧版通过环境变量定义的账户仅作为一次性导入源保留，需通过 `GROWU_ACCOUNTS` 和 `npm run migrate:legacy-accounts` 操作。
+当前 成长优册（GrowU） 使用基于数据库的 `UserAccount` 记录。旧版通过环境变量定义的账户仅作为一次性导入源保留，需通过 `GROWU_ACCOUNTS` 和 `npm run migrate:legacy-accounts` 操作。
 
 全新安装应使用 `/setup`。从旧版账户升级的现有安装应一次性导入旧版账户，验证访问正常后移除 `GROWU_ACCOUNTS`。
 

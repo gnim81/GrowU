@@ -1,8 +1,8 @@
 [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md) — [README](README.zh-CN.md) · [安全策略](SECURITY.zh-CN.md)
 
-# 参与 GrowU 贡献
+# 参与 成长优册（GrowU） 贡献
 
-感谢您为 GrowU 贡献。本指南概述了公开贡献的最低要求，以确保变更可审查、可复现且安全发布。
+感谢您为 成长优册（GrowU） 贡献。本指南概述了公开贡献的最低要求，以确保变更可审查、可复现且安全发布。
 
 ## 开发环境搭建
 

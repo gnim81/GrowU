@@ -4,7 +4,7 @@
 
 # Docker 部署
 
-本文档介绍如何使用项目中自带的 `Dockerfile`、`compose.yaml` 和 `.env.example` 进行 GrowU 的 Docker 部署。
+本文档介绍如何使用项目中自带的 `Dockerfile`、`compose.yaml` 和 `.env.example` 进行 成长优册（GrowU） 的 Docker 部署。
 
 ## 环境要求
 
@@ -68,7 +68,7 @@ docker compose up --build
 3. 在 `/login` 登录
 4. 今后在 `/settings/accounts` 管理账户
 
-GrowU 要求至少有一个启用的管理员账户。请勿禁用最后一个启用的管理员。
+成长优册（GrowU） 要求至少有一个启用的管理员账户。请勿禁用最后一个启用的管理员。
 
 ## 停止栈
 
