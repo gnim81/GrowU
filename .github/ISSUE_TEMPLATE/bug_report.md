@@ -6,6 +6,8 @@ labels: bug
 assignees: ""
 ---
 
+Do not report suspected security vulnerabilities in this public issue template. Use the private process in `SECURITY.md` instead.
+
 # What happened
 
 Describe the actual behavior.
@@ -33,4 +35,4 @@ Add relevant logs, stack traces, or screenshots. Remove secrets, credentials, an
 
 # Translation Prompt
 
-For a Simplified Chinese translation, translate this template accurately, keep field names and technical identifiers precise, and preserve the Markdown headings.
+For a Simplified Chinese translation, translate this template accurately, keep field names and technical identifiers precise, preserve the Markdown headings, and keep the security-reporting warning intact.

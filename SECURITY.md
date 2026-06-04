@@ -2,11 +2,13 @@
 
 ## Supported versions
 
-Security updates are provided for the latest public release.
+Security updates are provided for the latest public release. If you find a vulnerability on the default branch before a release is available, report it through the same private process.
 
 ## Reporting a vulnerability
 
-Do not open a public GitHub issue for suspected vulnerabilities. Contact the maintainer through the preferred private reporting channel listed on the repository.
+Do not open a public GitHub issue for suspected vulnerabilities.
+
+Use GitHub's private vulnerability reporting or draft a private security advisory for the repository if that feature is available. If the repository later lists a dedicated security contact, use that channel instead. If no private channel is available, contact the maintainer through the least public channel listed on the repository and do not include exploit details until a private path is confirmed.
 
 Include the following details in your report:
 
@@ -19,4 +21,4 @@ Please share only the minimum data needed to reproduce the issue safely.
 
 ## Translation Prompt
 
-For a Simplified Chinese translation, translate this document accurately, keep technical terms precise, preserve Markdown structure, and do not convert the reporting guidance into a public-issue workflow.
+For a Simplified Chinese translation, translate this document accurately, keep technical terms precise, preserve Markdown structure, and do not convert the reporting guidance into a public-issue workflow. Keep GitHub feature names such as private vulnerability reporting and security advisory recognizable.
