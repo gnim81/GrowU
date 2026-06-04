@@ -1,5 +1,7 @@
 # GrowU
 
+> [English](README.md) | [简体中文](README.zh-CN.md)
+
 GrowU is a simple positive-reinforcement progress and points tracker for children. Parents or guardians can manage children, define point items, record bonus or penalty events, redeem rewards, review transaction history, and export CSV reports without losing historical data.
 
 This repository is an English draft for public release. The maintainer plans to publish translated Chinese documentation later.

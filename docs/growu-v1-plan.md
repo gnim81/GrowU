@@ -1,5 +1,7 @@
 # GrowU V1 Plan
 
+> [English](growu-v1-plan.md) | [简体中文](growu-v1-plan.zh-CN.md)
+
 ## Product Goal
 
 GrowU V1 is a responsive web application for tracking positive reinforcement and point-based progress for children. It is designed for parents or guardians who want a simple way to record bonus events, penalties, reward redemption, transaction history, edits, statistics, and CSV exports while preserving historical records.

@@ -1,5 +1,7 @@
 # Docker Deployment
 
+> [English](docker-deployment.md) | [简体中文](docker-deployment.zh-CN.md)
+
 This guide covers Docker-based deployment for GrowU using the included `Dockerfile`, `compose.yaml`, and `.env.example`.
 
 ## Requirements

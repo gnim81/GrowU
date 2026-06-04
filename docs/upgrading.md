@@ -1,5 +1,7 @@
 # Upgrading GrowU
 
+> [English](upgrading.md) | [简体中文](upgrading.zh-CN.md)
+
 This guide is for existing GrowU deployments that are moving to the current open-source release-hardening branch.
 
 ## Before You Start

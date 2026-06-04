@@ -1,5 +1,9 @@
 # Contributing to GrowU
 
+> [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md)
+
+> [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md)
+
 Thanks for contributing to GrowU. This guide covers the minimum expectations for public contributions so changes are reviewable, reproducible, and safe to release.
 
 ## Development setup

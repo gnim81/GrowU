@@ -1,5 +1,7 @@
 # Local Development Setup
 
+> [English](local-dev-setup.md) | [简体中文](local-dev-setup.zh-CN.md)
+
 This guide covers local development without Docker. It assumes you will run PostgreSQL locally and start the Next.js app directly from the repository.
 
 ## 1. Install PostgreSQL

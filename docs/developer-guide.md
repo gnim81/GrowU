@@ -1,5 +1,7 @@
 # Developer Guide
 
+> [English](developer-guide.md) | [简体中文](developer-guide.zh-CN.md)
+
 This guide is for maintainers, contributors, and AI tools working on GrowU after the public release. It describes the current architecture, key business rules, and the files that define the product's durable behavior.
 
 ## Project Overview

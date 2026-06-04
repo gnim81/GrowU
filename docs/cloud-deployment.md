@@ -1,5 +1,7 @@
 # Cloud Deployment
 
+> [English](cloud-deployment.md) | [简体中文](cloud-deployment.zh-CN.md)
+
 This guide covers non-Docker deployment of GrowU on a cloud VM or bare server. The examples use Ubuntu, Node.js, PostgreSQL, `systemd`, and `lighttpd`, but the same application can run behind any reverse proxy that forwards requests to the Node.js process.
 
 ## Deployment Model

@@ -1,5 +1,9 @@
 # Security Policy
 
+> [English](SECURITY.md) | [简体中文](SECURITY.zh-CN.md)
+
+> [English](SECURITY.md) | [简体中文](SECURITY.zh-CN.md)
+
 ## Supported versions
 
 Security updates are provided for the latest public release. If you find a vulnerability on the default branch before a release is available, report it through the same private process.
