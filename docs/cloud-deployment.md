@@ -130,9 +130,9 @@ Current production setup does not depend on fixed environment-defined accounts. 
 ## Install Dependencies, Apply Migrations, and Build
 
 ```bash
-npm install
-npm run prisma:deploy
-npm run build
+sudo -u growu npm install
+sudo -u growu npm run prisma:deploy
+sudo -u growu npm run build
 ```
 
 On a new database, `/setup` becomes available after the app starts and no account exists yet.
@@ -140,7 +140,7 @@ On a new database, `/setup` becomes available after the app starts and no accoun
 For non-Docker upgrades that still use `GROWU_ACCOUNTS`, run the one-time import manually after migrations:
 
 ```bash
-npm run migrate:legacy-accounts
+sudo -u growu npm run migrate:legacy-accounts
 ```
 
 Fresh installations should skip the import and create the first admin through `/setup`.
@@ -262,17 +262,17 @@ GrowU enforces at least one enabled admin account.
 
 ```bash
 cd /opt/growu
-git pull
-npm install
-npm run prisma:deploy
-npm run build
+sudo -u growu git pull
+sudo -u growu npm install
+sudo -u growu npm run prisma:deploy
+sudo -u growu npm run build
 sudo systemctl restart growu
 sudo systemctl status growu
 ```
 
 Back up the database and `.env` before applying updates.
 
-If this update is the one-time move from legacy `GROWU_ACCOUNTS` to database-backed accounts, run `npm run migrate:legacy-accounts` after `npm run prisma:deploy` and before restarting the service. Remove `GROWU_ACCOUNTS` from `.env` after verifying login.
+If this update is the one-time move from legacy `GROWU_ACCOUNTS` to database-backed accounts, run `sudo -u growu npm run migrate:legacy-accounts` after `sudo -u growu npm run prisma:deploy` and before restarting the service. Remove `GROWU_ACCOUNTS` from `.env` after verifying login.
 
 ## Troubleshooting
 
