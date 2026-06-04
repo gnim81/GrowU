@@ -21,7 +21,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://growu:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/growu?schema=public
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
       AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
       AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
       GROWU_ACCOUNTS: ${GROWU_ACCOUNTS:-}
