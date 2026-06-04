@@ -141,4 +141,4 @@ Rules:
 
 ## Translation Prompt
 
-Translate this document into Simplified Chinese for public product-planning documentation. Keep Markdown structure, schema names, environment variable names, and route paths unchanged. Preserve the distinction between current database-backed accounts and legacy upgrade-only `GROWU_ACCOUNTS`, along with the acceptance criteria and data-retention rules.
+Translate this document into Simplified Chinese for public product-planning documentation. Keep Markdown structure, schema names, role names such as `ADMIN` and `PARENT`, code identifiers, environment variable names, and route paths unchanged. Preserve the distinction between current database-backed accounts and legacy upgrade-only `GROWU_ACCOUNTS`, along with the acceptance criteria and data-retention rules.

@@ -34,7 +34,6 @@ cp .env.example .env
 Then edit `.env` and set at least:
 
 ```env
-POSTGRES_PASSWORD="replace-with-your-local-postgres-password-if-you-use-compose-too"
 DATABASE_URL="postgresql://growu:replace-with-a-url-encoded-password@localhost:5432/growu?schema=public"
 AUTH_SECRET="replace-with-a-long-random-auth-secret"
 AUTH_COOKIE_SECURE="false"

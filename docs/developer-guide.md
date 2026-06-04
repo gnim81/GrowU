@@ -152,6 +152,8 @@ These locations are local planning or tool artifacts and should not be treated a
 
 They are local-only and excluded through `.git/info/exclude`. Do not submit them in a public pull request.
 
+In linked worktrees, the effective exclude file may live in the common Git directory rather than in the worktree's `.git` pointer file. Use `git rev-parse --git-common-dir` if you need to find the exact local path.
+
 ## Contributor Guidance
 
 - Read this guide before changing account, transaction, or export behavior.
@@ -161,4 +163,4 @@ They are local-only and excluded through `.git/info/exclude`. Do not submit them
 
 ## Translation Prompt
 
-Translate this document into Simplified Chinese for public contributor and maintainer documentation. Keep Markdown headings, code blocks, filenames, schema names, type names, environment variable names, and route paths unchanged. Preserve the architectural and business-rule emphasis, especially the disable-only lifecycle, transaction snapshots, revision audit trail, and admin-account guard.
+Translate this document into Simplified Chinese for public contributor and maintainer documentation. Keep Markdown headings, code blocks, filenames, schema names, type names, environment variable names, role names such as `ADMIN` and `PARENT`, code identifiers, and route paths unchanged. Preserve the architectural and business-rule emphasis, especially the disable-only lifecycle, transaction snapshots, revision audit trail, and admin-account guard.

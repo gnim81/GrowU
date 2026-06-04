@@ -68,10 +68,6 @@ GrowU requires at least one enabled admin account. Do not disable the last enabl
 
 ## Stop the Stack
 
-```bash
-docker compose down
-```
-
 To stop and remove containers while keeping the database volume:
 
 ```bash
@@ -123,7 +119,7 @@ docker compose exec -T db pg_dump -U growu -d growu > growu-backup.sql
 Example restore into an intentionally replaced database:
 
 ```bash
-Get-Content growu-backup.sql | docker compose exec -T db psql -U growu -d growu
+docker compose exec -T db psql -U growu -d growu < growu-backup.sql
 ```
 
 If you need a full rollback, keep both:

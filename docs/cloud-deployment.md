@@ -85,13 +85,20 @@ cd /opt/growu
 
 Or upload the project files to `/opt/growu` by another method.
 
+Create a dedicated service user and make it the owner of the application directory:
+
+```bash
+sudo adduser --system --group --home /opt/growu --shell /usr/sbin/nologin growu
+sudo chown -R growu:growu /opt/growu
+```
+
 ## Configure Environment Variables
 
 Create `.env` in the project root:
 
 ```bash
 cd /opt/growu
-nano .env
+sudo -u growu nano .env
 ```
 
 Example:
@@ -130,6 +137,14 @@ npm run build
 
 On a new database, `/setup` becomes available after the app starts and no account exists yet.
 
+For non-Docker upgrades that still use `GROWU_ACCOUNTS`, run the one-time import manually after migrations:
+
+```bash
+npm run migrate:legacy-accounts
+```
+
+Fresh installations should skip the import and create the first admin through `/setup`.
+
 ## Run GrowU with systemd
 
 Create `/etc/systemd/system/growu.service`:
@@ -143,14 +158,18 @@ After=network.target postgresql.service
 Type=simple
 WorkingDirectory=/opt/growu
 Environment=NODE_ENV=production
+EnvironmentFile=/opt/growu/.env
 ExecStart=/usr/bin/npm run start -- --hostname 127.0.0.1 --port 3000
 Restart=always
 RestartSec=5
-User=root
+User=growu
+Group=growu
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+The service intentionally runs as the unprivileged `growu` user. It also loads `/opt/growu/.env`; without that `EnvironmentFile`, `DATABASE_URL` and `AUTH_SECRET` may be missing when `systemd` starts the app.
 
 Then enable and start it:
 
@@ -196,11 +215,14 @@ $HTTP["host"] == "your-domain.com" {
     )
   )
 
+  # Use "https" when TLS terminates at this proxy.
   setenv.add-environment = (
-    "X-Forwarded-Proto" => "http"
+    "X-Forwarded-Proto" => "https"
   )
 }
 ```
+
+If you are using this example only for plain HTTP testing, set `X-Forwarded-Proto` to `http` and keep `AUTH_COOKIE_SECURE="false"`.
 
 Enable and reload:
 
@@ -249,6 +271,8 @@ sudo systemctl status growu
 ```
 
 Back up the database and `.env` before applying updates.
+
+If this update is the one-time move from legacy `GROWU_ACCOUNTS` to database-backed accounts, run `npm run migrate:legacy-accounts` after `npm run prisma:deploy` and before restarting the service. Remove `GROWU_ACCOUNTS` from `.env` after verifying login.
 
 ## Troubleshooting
 
