@@ -1,293 +1,144 @@
-# GrowU「成长优册」V1 开发计划
+# GrowU V1 Plan
 
-## 1. 目标
+## Product Goal
 
-GrowU 是一个家庭自用的云端响应式 Web App，用于记录多个孩子的加分、减分、积分兑换、流水回溯、记录修改审计、基础统计和 CSV 导出。
+GrowU V1 is a responsive web application for tracking positive reinforcement and point-based progress for children. It is designed for parents or guardians who want a simple way to record bonus events, penalties, reward redemption, transaction history, edits, statistics, and CSV exports while preserving historical records.
 
-V1 不包含：孩子独立账号、多家庭/多租户、离线功能、推送提醒、附件证据、周期清零、部署自动化。
+## In Scope
 
-## 2. 技术栈
+- Database-backed user accounts
+- First-run admin setup through `/setup`
+- Login at `/login`
+- Admin account management at `/settings/accounts`
+- Child profile management
+- Bonus, penalty, and reward item management
+- Point transaction creation
+- Reward redemption with balance checks
+- Transaction editing with revision audit history
+- Statistics and CSV export
+- Mobile-friendly and desktop-compatible UI
 
-- 框架：Next.js + TypeScript
-- UI：Tailwind CSS，组件风格对齐 shadcn/ui 的简洁表单和卡片
-- 数据库：PostgreSQL
-- ORM：Prisma
-- 登录：服务端固定账号
-- 运行方式：标准 Node.js Web 服务
-- 适配目标：手机浏览器优先，同时兼容桌面浏览器
+## Out of Scope
 
-技术约束：
+- Child self-service accounts
+- Multi-family or multi-tenant support
+- Offline mode
+- Push notifications
+- Attachments or evidence uploads
+- Automatic recurring resets
+- Deployment automation beyond documented self-hosting flows
 
-- 所有业务写入必须经过服务端校验。
-- 当前积分必须能从流水重新计算出来。
-- 修改积分记录时必须保留审计记录。
-- 兑换不允许透支。
-- 减分允许导致负分。
-- 孩子和项目在正常界面中只支持停用，不提供硬删除。
+## Technical Baseline
 
-## 3. 数据模型
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- Prisma
+- PostgreSQL
+- Standard Node.js deployment or Docker-based self-hosting
 
-### 3.1 固定账号
+## Current Account Model
 
-固定账号来自 `GROWU_ACCOUNTS` 环境变量，不提供账号管理界面。
+GrowU now stores accounts in the database through `UserAccount`.
 
-账号字段：
+Rules:
 
-- username
-- passwordHash
-- displayName
-- enabled
+- A fresh installation creates the first admin through `/setup`
+- Users sign in at `/login`
+- Admins manage accounts at `/settings/accounts`
+- At least one enabled admin account must always remain
+- `GROWU_ACCOUNTS` exists only as a legacy import source during upgrades
 
-验收标准：
+## Data Rules
 
-- 正确账号密码可以登录。
-- 错误密码不能登录。
-- 停用账号不能登录。
-- 未登录访问业务页面会跳转到登录页。
+### `UserAccount`
 
-### 3.2 Child
+- Stores login identity, display name, password hash, role, and enabled state
+- Supports `ADMIN` and `PARENT` roles
+- Must preserve at least one enabled admin
 
-用于管理多个孩子。
+### `Child`
 
-字段：
+- Children can be created, edited, and disabled
+- Normal product flows do not hard-delete children
+- Historical transactions must remain visible after a child is disabled
 
-- id
-- name
-- displayColor
-- avatarText
-- enabled
-- sortOrder
-- createdAt
-- updatedAt
+### `PointItem`
 
-验收标准：
+- Bonus, penalty, and reward items can be created, edited, and disabled
+- Normal product flows do not hard-delete items
+- Disabled items should disappear from new-entry pickers but remain meaningful in history
 
-- 可以创建多个孩子。
-- 可以修改孩子名称、颜色、排序。
-- 停用孩子后，历史数据不丢失；正常公开版本不提供孩子硬删除。
-- 首页能看到每个启用孩子的当前积分。
+### `PointTransaction`
 
-### 3.3 PointItem
+- Stores all point changes
+- Uses integer point values
+- Bonus transactions increase balance
+- Penalty transactions decrease balance and may go below zero
+- Reward transactions decrease balance and must fail when balance would go below zero
+- Historical item display relies on `itemNameSnapshot`
 
-用于维护加分、减分、兑换项目。
+### `TransactionRevision`
 
-字段：
+- Stores before/after snapshots of edits
+- Records the reason, editor, and timestamp
+- Provides an audit trail for transaction changes
 
-- id
-- type: BONUS | PENALTY | REWARD
-- name
-- defaultPoints
-- description
-- enabled
-- sortOrder
-- createdAt
-- updatedAt
+## Functional Acceptance Criteria
 
-验收标准：
+### Authentication and setup
 
-- 可以新增、编辑、停用三类项目。
-- 新增加分记录时只显示启用的加分项目。
-- 新增减分记录时只显示启用的减分项目。
-- 新增兑换记录时只显示启用的兑换项目。
-- 选择项目后自动带出默认分值和说明。
-- 停用项目后历史流水仍保留 `itemNameSnapshot`；正常公开版本不提供项目硬删除。
+- When no account exists, `/setup` allows creation of the initial admin
+- Valid credentials can sign in at `/login`
+- Invalid or disabled accounts cannot sign in
+- Unauthenticated access to protected pages redirects to login
+- Admins can manage accounts at `/settings/accounts`
+- The app prevents removal or disabling of the last enabled admin
 
-### 3.4 PointTransaction
+### Dashboard
 
-记录所有积分变化。
+- Shows active children and current balances
+- Reflects transaction totals accurately
+- Provides clear navigation to transaction entry, history, and reporting flows
 
-字段：
+### Child management
 
-- id
-- childId
-- type: BONUS | PENALTY | REWARD
-- itemId
-- itemNameSnapshot
-- points
-- note
-- occurredAt
-- createdByUsername
-- createdAt
-- updatedAt
+- Supports creating, editing, and disabling children
+- Disabled children do not appear in new transaction defaults
+- Historical data remains visible for disabled children
 
-验收标准：
+### Item management
 
-- 创建加分记录后，孩子积分增加。
-- 创建减分记录后，孩子积分减少，允许变为负数。
-- 创建兑换记录后，孩子积分减少。
-- 兑换时如果当前积分不足，不能提交。
-- 修改流水后，孩子当前积分重新计算正确。
-- 历史流水不会因为项目停用而消失。
-- V1 不支持删除积分流水，只支持修改并保留审计。
+- Supports creating, editing, and disabling bonus, penalty, and reward items
+- Disabled items do not appear in new transaction choices
+- Historical transaction rendering remains intact after item edits or disablement
 
-### 3.5 TransactionRevision
+### Transaction entry
 
-记录流水修改历史。
+- Bonus entries increase balance
+- Penalty entries decrease balance
+- Reward redemption decreases balance only when enough points exist
+- Transactions store the child, item, snapshot name, points, note, and occurrence time
 
-字段：
+### Transaction history and editing
 
-- id
-- transactionId
-- beforeData
-- afterData
-- reason
-- editedByUsername
-- createdAt
+- Transactions are filterable by child, type, and date range
+- Editing a transaction updates current balances correctly
+- Every edit creates a `TransactionRevision`
+- Historical item names remain readable through `itemNameSnapshot`
 
-验收标准：
+### Statistics and export
 
-- 修改流水分值后，可以查看修改前分值和修改后分值。
-- 修改流水备注后，可以查看修改前备注和修改后备注。
-- 审计记录显示修改人和修改时间。
-- 多次修改同一流水时，审计记录按时间展示。
+- Aggregated statistics match filtered transaction totals
+- CSV export matches the selected transaction set
+- Chinese content remains readable in exported CSV files
 
-## 4. 功能模块与验收
+## Deployment Expectations
 
-### 4.1 登录
+- The project should remain deployable with Node.js plus PostgreSQL
+- Docker deployment should remain supported through the included `Dockerfile` and `compose.yaml`
+- Environment configuration must use explicit `DATABASE_URL`, `AUTH_SECRET`, and related runtime settings
 
-功能：用户通过固定账号登录，登录后进入首页，未登录不能访问业务页面。
+## Translation Prompt
 
-验收标准：
-
-- 正确账号密码登录成功。
-- 错误账号密码登录失败。
-- 登录成功后刷新页面仍保持登录状态。
-- 退出登录后无法访问业务页面。
-
-### 4.2 首页仪表盘
-
-功能：展示所有启用孩子的积分概览，并提供记分、兑换、流水、统计入口。
-
-验收标准：
-
-- 多个孩子能同时显示。
-- 当前积分与流水合计一致。
-- 今日变化只统计当天发生日期的流水。
-- 本周变化只统计当前自然周流水。
-- 从首页可以进入加分、减分、兑换、流水页面。
-
-### 4.3 孩子管理
-
-功能：新增、编辑、停用孩子。
-
-验收标准：
-
-- 新增孩子后出现在首页。
-- 修改孩子姓名后，首页和筛选项同步更新。
-- 停用孩子后，不再作为新增流水的默认选项。
-- 停用孩子的历史流水仍可筛选查看。
-- 正常公开版本不提供孩子硬删除。
-
-### 4.4 项目管理
-
-功能：管理加分、减分、兑换项目。
-
-验收标准：
-
-- 可以分别维护加分、减分、兑换项目。
-- 停用项目不会出现在新增记录选择中。
-- 编辑项目不会破坏历史流水展示。
-- 正常公开版本不提供项目硬删除。
-- 默认分值必须为正整数。
-- 项目名称不能为空。
-
-### 4.5 加分记录
-
-功能：为孩子记录一次加分，默认从加分项目选择，也允许调整实际分值和备注。
-
-验收标准：
-
-- 提交后生成一条加分流水。
-- 孩子当前积分增加对应分值。
-- 流水中显示孩子、项目、分值、备注、日期。
-- 加分记录可在流水页编辑。
-- 编辑后生成修改审计。
-
-### 4.6 减分记录
-
-功能：为孩子记录一次减分，默认从减分项目选择，也允许调整实际分值和备注。
-
-验收标准：
-
-- 提交后生成一条减分流水。
-- 孩子当前积分减少对应分值。
-- 当前积分可以低于 0。
-- 减分记录可在流水页编辑。
-- 编辑后生成修改审计。
-
-### 4.7 兑换积分
-
-功能：孩子使用积分兑换奖励。
-
-验收标准：
-
-- 当前积分足够时可以兑换。
-- 兑换后生成一条兑换流水。
-- 兑换后孩子当前积分减少。
-- 当前积分不足时不能兑换。
-- 兑换记录可在流水页编辑。
-- 编辑兑换记录后重新校验余额规则，并生成修改审计。
-
-### 4.8 流水回溯
-
-功能：按日期查看所有积分变化，支持筛选和分类。
-
-验收标准：
-
-- 默认列表按发生日期倒序。
-- 可以只看某个孩子的流水。
-- 可以只看加分、减分或兑换。
-- 可以按日期范围筛选。
-- 修改后的流水显示最新值。
-- 审计详情能看到历史修改记录。
-
-### 4.9 统计与导出
-
-功能：按孩子和日期范围统计积分，并导出 CSV。
-
-验收标准：
-
-- 统计结果与流水筛选后的合计一致。
-- 切换孩子后统计结果正确更新。
-- 切换日期范围后统计结果正确更新。
-- 加分、减分、兑换分别汇总展示。
-- CSV 内容与当前筛选结果一致。
-- 中文内容不乱码。
-
-## 5. 页面结构
-
-- `/login`：登录页
-- `/`：首页仪表盘
-- `/children`：孩子管理
-- `/items`：项目管理
-- `/record/bonus`：记录加分
-- `/record/penalty`：记录减分
-- `/rewards/redeem`：兑换积分
-- `/transactions`：流水回溯
-- `/transactions/:id`：流水详情与审计记录
-- `/stats`：统计与导出
-
-## 6. 开发顺序
-
-1. 初始化项目、数据库、ORM、基础 UI。
-2. 实现固定账号登录。
-3. 实现孩子管理。
-4. 实现项目管理。
-5. 实现积分流水创建。
-6. 实现首页当前积分展示。
-7. 实现加分、减分、兑换流程。
-8. 实现流水列表、筛选、详情。
-9. 实现流水编辑和审计。
-10. 实现统计与 CSV 导出。
-11. 做手机端响应式调整。
-12. 补齐测试和验收用例。
-
-## 7. 默认假设
-
-- 积分只使用整数。
-- 发生日期可以手动选择，默认当前日期时间。
-- V1 不支持删除流水，只支持修改并保留审计；单条流水删除仍不支持。
-- 项目可停用，正常公开版本不做硬删除。
-- 孩子可停用，正常公开版本不做硬删除。
-- 所有固定账号都是家长权限。
-- 部署环境由使用者自行提供，应用保持标准 Node.js + PostgreSQL 可部署。
+Translate this document into Simplified Chinese for public product-planning documentation. Keep Markdown structure, schema names, environment variable names, and route paths unchanged. Preserve the distinction between current database-backed accounts and legacy upgrade-only `GROWU_ACCOUNTS`, along with the acceptance criteria and data-retention rules.

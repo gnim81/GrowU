@@ -1,92 +1,106 @@
-# GrowU 成长优册
+# GrowU
 
-家庭自用的云端响应式积分管理 Web App。V1 用于管理多个孩子、加减分项目、兑换项目、积分流水、记录修改审计、统计和 CSV 导出。
+GrowU is a simple positive-reinforcement progress and points tracker for children. Parents or guardians can manage children, define point items, record bonus or penalty events, redeem rewards, review transaction history, and export CSV reports without losing historical data.
 
-## 技术栈
+This repository is an English draft for public release. The maintainer plans to publish translated Chinese documentation later.
 
-- Next.js + TypeScript
+## Features
+
+- Database-backed user accounts with roles and account management
+- First-run admin creation at `/setup`
+- Login flow at `/login`
+- Child profiles with disable-only lifecycle to preserve history
+- Bonus, penalty, and reward item management with disable-only lifecycle
+- Transaction history with `itemNameSnapshot` preservation
+- Reward redemption balance checks
+- Transaction edit history through `TransactionRevision`
+- CSV export for transaction data, including readable Chinese content when exported
+
+## Stack
+
+- Next.js App Router
+- TypeScript
 - Tailwind CSS
 - Prisma
 - PostgreSQL
-- 固定账号登录
 
-## 本地准备
+## Docker Quick Start
 
-详细步骤见 [docs/local-dev-setup.md](docs/local-dev-setup.md)。
-
-云端非 Docker 部署（Node.js + PostgreSQL + lighttpd）见 [docs/cloud-deployment.md](docs/cloud-deployment.md)。
-
-面向后续开发与 AI 扩展的代码说明见 [docs/developer-guide.md](docs/developer-guide.md)。
-
-复制环境变量文件：
+1. Copy the environment template:
 
 ```bash
 cp .env.example .env
 ```
 
-生成密码哈希：
+2. Edit `.env` and set these required values:
+
+- `POSTGRES_PASSWORD`
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_COOKIE_SECURE`
+
+Use an explicit `DATABASE_URL`. If the database password contains reserved URI characters such as `@`, `:`, `/`, `?`, or `#`, URL-encode the password before placing it in the connection string.
+
+3. Start the stack:
 
 ```bash
-npm run hash-password -- your-password
+docker compose up --build
 ```
 
-把输出结果填入 `.env` 的 `GROWU_ACCOUNTS`。哈希格式类似 `pbkdf2.310000.salt.hash`：
+4. Open the app and finish first-run setup:
 
-```json
-[{"username":"admin","displayName":"管理员","passwordHash":"生成的哈希","enabled":true}]
-```
+- Visit `http://localhost:3000/setup`
+- Create the initial admin account
+- Sign in at `http://localhost:3000/login`
 
-## 开发命令
+Detailed Docker guidance: [docs/docker-deployment.md](docs/docker-deployment.md)
 
-安装依赖：
+## Non-Docker Development and Deployment
+
+Install dependencies:
 
 ```bash
-npm install --no-audit --no-fund
+npm install
 ```
 
-生成 Prisma Client：
-
-```bash
-npm run prisma:generate
-```
-
-创建数据库迁移：
-
-```bash
-npm run prisma:migrate
-```
-
-部署已有迁移：
+Set `DATABASE_URL` and `AUTH_SECRET` in `.env`, then apply migrations:
 
 ```bash
 npm run prisma:deploy
 ```
 
-启动开发服务：
+Run the development server:
 
 ```bash
 npm run dev
 ```
 
-构建：
+Or build and run production mode:
 
 ```bash
 npm run build
+npm run start
 ```
 
-## 当前实现范围
+On a new database, visit `/setup` first to create the initial admin account.
 
-- 固定账号登录与退出
-- 首页积分概览
-- 孩子新增、编辑、停用
-- 加分、减分、兑换项目新增、编辑、停用
-- 加分、减分、兑换流水创建
-- 兑换余额不足拦截
-- 流水列表、筛选、详情
-- 流水修改审计
-- 统计汇总
-- CSV 导出
+## Documentation
 
-## 开发计划
+- [docs/docker-deployment.md](docs/docker-deployment.md)
+- [docs/cloud-deployment.md](docs/cloud-deployment.md)
+- [docs/upgrading.md](docs/upgrading.md)
+- [docs/local-dev-setup.md](docs/local-dev-setup.md)
+- [docs/developer-guide.md](docs/developer-guide.md)
+- [docs/growu-v1-plan.md](docs/growu-v1-plan.md)
 
-完整 V1 开发计划和验收标准见 [docs/growu-v1-plan.md](docs/growu-v1-plan.md)。
+## Account Notes
+
+- GrowU now uses database-backed `UserAccount` records.
+- The first account is created through `/setup` when no account exists yet.
+- Admin account management is available at `/settings/accounts`.
+- Keep at least one enabled admin account at all times.
+- Legacy environment-defined accounts are only for upgrade import through `GROWU_ACCOUNTS` and `npm run migrate:legacy-accounts`.
+
+## Translation Prompt
+
+Translate this document into Simplified Chinese for a public GitHub README. Keep Markdown structure, code blocks, paths, URLs, environment variable names, and route paths unchanged. Preserve the release-ready tone, and translate prose naturally for maintainers and self-hosting users in China.

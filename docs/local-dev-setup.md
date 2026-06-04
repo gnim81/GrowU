@@ -1,97 +1,93 @@
-# GrowU 本地调试准备
+# Local Development Setup
 
-本文档用于在 Windows 本机调通 GrowU。云端部署不需要 Docker，本地调试也不依赖 Docker。
+This guide covers local development without Docker. It assumes you will run PostgreSQL locally and start the Next.js app directly from the repository.
 
-## 1. 当前项目侧配置
+## 1. Install PostgreSQL
 
-项目根目录已经生成 `.env`，本地默认配置如下：
+Install PostgreSQL using your preferred package manager or the official installer for your operating system.
 
-- 数据库：`growu`
-- 数据库用户：`postgres`
-- 数据库密码：`GrowUlocal2026`
-- 应用登录账号：`admin`
-- 应用登录密码：`GrowUadmin2026`
-- Cookie 安全模式：`AUTH_COOKIE_SECURE=false`，允许手机通过局域网 HTTP 地址调试。
+Verify that:
 
-`.env` 已被 `.gitignore` 忽略，不应提交到代码仓库。
+- PostgreSQL is installed
+- the server is running
+- `psql` is available on your shell path
 
-## 2. 安装 PostgreSQL
+## 2. Create a Local Database and User
 
-需要使用管理员 PowerShell 执行。普通权限可能会因为 Chocolatey 目录权限失败。
+Create a database and a dedicated user with your own generated password. Example SQL:
 
-```powershell
-choco install postgresql --yes --params '/Password:GrowUlocal2026 /Port:5432'
+```sql
+CREATE USER growu WITH PASSWORD 'replace-with-your-generated-local-password';
+CREATE DATABASE growu OWNER growu;
 ```
 
-如果提示 Chocolatey 锁文件或权限错误，先确认没有其他 Chocolatey 进程运行，然后在管理员 PowerShell 中删除提示中的锁文件，再重试安装。
+If your password contains reserved URI characters such as `@`, `:`, `/`, `?`, or `#`, URL-encode the password segment before placing it in `DATABASE_URL`.
 
-## 3. 确认 PostgreSQL 可用
+## 3. Create `.env`
 
-重新打开 PowerShell 后执行：
+Copy the template:
 
-```powershell
-psql --version
-Get-Service -Name postgresql* | Select-Object Name,Status,DisplayName
+```bash
+cp .env.example .env
 ```
 
-服务状态应为 `Running`。
+Then edit `.env` and set at least:
 
-## 4. 创建本地数据库
-
-```powershell
-createdb -U postgres growu
+```env
+POSTGRES_PASSWORD="replace-with-your-local-postgres-password-if-you-use-compose-too"
+DATABASE_URL="postgresql://growu:replace-with-a-url-encoded-password@localhost:5432/growu?schema=public"
+AUTH_SECRET="replace-with-a-long-random-auth-secret"
+AUTH_COOKIE_SECURE="false"
+GROWU_ACCOUNTS=""
 ```
 
-提示输入密码时，输入：
+For ordinary local HTTP development, keep `AUTH_COOKIE_SECURE=false`.
 
-```text
-GrowUlocal2026
+That setting is also useful for mobile or LAN testing over HTTP. If you later test through HTTPS locally, you can switch it to `true`.
+
+## 4. Install Dependencies
+
+```bash
+npm install
 ```
 
-如果 `createdb` 不在 PATH，可以使用 PostgreSQL 安装目录下的完整路径，例如：
+## 5. Apply Database Migrations
 
-```powershell
-& "C:\Program Files\PostgreSQL\18\bin\createdb.exe" -U postgres growu
-```
-
-## 5. 初始化数据库表
-
-在项目根目录执行：
-
-```powershell
+```bash
 npm run prisma:deploy
 ```
 
-## 6. 启动本地服务
+## 6. Start the Development Server
 
-```powershell
+```bash
 npm run dev
 ```
 
-浏览器访问：
+Open:
 
 ```text
 http://localhost:3000
 ```
 
-使用账号 `admin` 和密码 `GrowUadmin2026` 登录。
+## 7. First-Run Setup
 
-如果手机能登录但提交加减分后跳回登录页，确认 `.env` 中有：
+On a new local database:
 
-```env
-AUTH_COOKIE_SECURE="false"
+1. Visit `/setup`
+2. Create the initial admin account
+3. Sign in at `/login`
+
+Do not configure local accounts through environment variables for normal development. `GROWU_ACCOUNTS` is only for upgrade-import testing.
+
+## 8. Optional Production-Mode Local Check
+
+If you want to test the production build locally:
+
+```bash
+npm run build
+npm run start
 ```
 
-修改后需要重新 `npm run build` 并重启应用服务。
+## Translation Prompt
 
-## 7. 云端部署方向
-
-当前项目按公有云部署目标开发：
-
-- 使用标准 Node.js 服务运行 Next.js。
-- 使用 PostgreSQL 作为数据库。
-- 使用环境变量提供数据库连接、认证密钥和固定账号。
-- 使用 `npm run prisma:deploy` 初始化云端数据库结构。
-- 使用 `npm run build` 和 `npm run start` 运行生产服务。
-
-云端不需要 Docker，但云服务器需要安装 Node.js，并能访问 PostgreSQL。
+Translate this document into Simplified Chinese for public local development documentation. Keep Markdown structure, commands, filenames, environment variable names, and route paths unchanged. Preserve the warnings about generating your own passwords, URL-encoding database credentials when needed, and using `AUTH_COOKIE_SECURE=false` for local HTTP or LAN testing.
