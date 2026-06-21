@@ -2,10 +2,10 @@ import Link from "next/link";
 import { PointTransactionType } from "@prisma/client";
 import { DatePresetLinks } from "@/components/date-preset-links";
 import { PointsTrendChart } from "@/components/points-trend-chart";
-import { Card, PageHeader } from "@/components/ui";
+import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
 import { parseDateRange, validateDateRange } from "@/lib/date-range";
 import { formatDateTime, formatPoints } from "@/lib/format";
-import { transactionTypeLabels } from "@/lib/points";
+import { transactionTypeLabels, transactionTypeTones } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
 import { buildTrendChartData } from "@/lib/transaction-trends";
 
@@ -131,12 +131,12 @@ export default async function TransactionsPage({
           <DatePresetLinks pathname="/transactions" params={{ childId: params.childId, type: params.type }} />
         </div>
         {!rangeValidation.ok ? (
-          <div className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-danger">{rangeValidation.error}</div>
+          <p className="badge badge-danger mt-4 w-full justify-center py-1.5">{rangeValidation.error}</p>
         ) : null}
       </Card>
       <Card className="mb-4">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">积分趋势</h2>
+          <h2 className="text-lg font-semibold text-ink">积分趋势</h2>
           <p className="text-sm text-muted">
             {params.type ? `${transactionTypeLabels[params.type]}积分随时间变化` : "总积分随时间变化"}
           </p>
@@ -145,13 +145,13 @@ export default async function TransactionsPage({
       </Card>
       <div className="space-y-3">
         {transactions.map((transaction) => (
-          <Card key={transaction.id}>
+          <Card key={transaction.id} interactive>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium">
+                  <Badge tone={transactionTypeTones[transaction.type]}>
                     {transactionTypeLabels[transaction.type]}
-                  </span>
+                  </Badge>
                   <h2 className="text-base font-semibold text-ink">{transaction.child.name}</h2>
                   <span className="text-sm text-muted">{transaction.itemNameSnapshot}</span>
                 </div>
@@ -159,7 +159,7 @@ export default async function TransactionsPage({
                 {transaction.note ? <p className="mt-2 text-sm text-slate-700">{transaction.note}</p> : null}
               </div>
               <div className="flex items-center justify-between gap-4 sm:justify-end">
-                <p className={transaction.points > 0 ? "text-xl font-semibold text-success" : "text-xl font-semibold text-danger"}>
+                <p className={transaction.points > 0 ? "text-xl font-bold text-success" : "text-xl font-bold text-danger"}>
                   {formatPoints(transaction.points)}
                 </p>
                 <Link className="btn btn-secondary" href={`/transactions/${transaction.id}`}>
@@ -169,7 +169,9 @@ export default async function TransactionsPage({
             </div>
           </Card>
         ))}
-        {transactions.length === 0 ? <Card className="text-center text-sm text-muted">暂无流水。</Card> : null}
+        {transactions.length === 0 ? (
+          <EmptyState title="暂无流水" description="调整筛选条件，或先去记录一条积分。" />
+        ) : null}
       </div>
     </>
   );

@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { loginAction } from "@/app/actions";
@@ -23,13 +24,20 @@ export default async function LoginPage({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
-      <section className="w-full max-w-sm rounded-lg border border-line bg-white p-6 shadow-soft">
-        <div className="mb-6">
-          <p className="text-sm font-medium text-brand">GrowU</p>
-          <h1 className="mt-1 text-2xl font-semibold text-ink">成长优册</h1>
-          <p className="mt-2 text-sm text-muted">登录后管理孩子积分和兑换记录。</p>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-auth-gradient px-4 py-8">
+      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-white/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
+      <section className="relative w-full max-w-sm rounded-2xl border border-white/40 bg-white/95 p-7 shadow-xl backdrop-blur">
+        <div className="mb-6 flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-md">
+            <Sparkles size={20} />
+          </span>
+          <div>
+            <p className="text-xs font-medium text-brand">GrowU</p>
+            <h1 className="text-xl font-semibold text-ink">成长优册</h1>
+          </div>
         </div>
+        <p className="mb-6 text-sm text-muted">登录后管理孩子积分和兑换记录。</p>
         <form action={loginAction} className="space-y-4">
           <label className="field">
             <span className="label">用户名</span>
@@ -39,7 +47,9 @@ export default async function LoginPage({
             <span className="label">密码</span>
             <input className="input" name="password" type="password" autoComplete="current-password" required />
           </label>
-          {params.error ? <p className="text-sm text-danger">账号或密码错误。</p> : null}
+          {params.error ? (
+            <p className="badge badge-danger w-full justify-center py-1.5">账号或密码错误。</p>
+          ) : null}
           <button className="btn btn-primary w-full" type="submit">
             登录
           </button>

@@ -12,8 +12,16 @@
 
 body {
   margin: 0;
-  background: #f8fafc;
-  color: #172033;
+  background-color: #f7f6fb;
+  background-image: radial-gradient(
+      120% 80% at 0% 0%,
+      rgba(99, 102, 241, 0.06) 0%,
+      transparent 55%
+    ),
+    radial-gradient(100% 70% at 100% 0%, rgba(244, 63, 94, 0.05) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: #1e1b2e;
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
@@ -23,30 +31,72 @@ textarea {
   font: inherit;
 }
 
-.field {
-  @apply flex flex-col gap-2;
-}
+@layer components {
+  .field {
+    @apply flex flex-col gap-1.5;
+  }
 
-.label {
-  @apply text-sm font-medium text-slate-700;
-}
+  .label {
+    @apply text-sm font-medium text-slate-700;
+  }
 
-.input {
-  @apply w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-blue-100;
-}
+  .input {
+    @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition;
+    @apply placeholder:text-slate-400;
+    @apply hover:border-brand-100;
+    @apply focus:border-brand focus:shadow-glow;
+  }
 
-.btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
-}
+  select.input {
+    @apply pr-8;
+  }
 
-.btn-primary {
-  @apply bg-brand text-white hover:bg-blue-700;
-}
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
 
-.btn-secondary {
-  @apply border border-line bg-white text-slate-700 hover:bg-slate-50;
-}
+  .btn-primary {
+    @apply bg-brand-gradient text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:opacity-95;
+  }
 
-.btn-danger {
-  @apply bg-danger text-white hover:bg-red-700;
+  .btn-secondary {
+    @apply border border-line bg-white text-slate-700 shadow-sm hover:border-brand-100 hover:text-brand hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-white shadow-md hover:bg-red-700 hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-brand {
+    @apply bg-brand-50 text-brand;
+  }
+
+  .badge-accent {
+    @apply bg-accent-50 text-accent;
+  }
+
+  .badge-success {
+    @apply bg-success-50 text-success;
+  }
+
+  .badge-danger {
+    @apply bg-danger-50 text-danger;
+  }
+
+  .badge-warning {
+    @apply bg-warning-50 text-warning;
+  }
+
+  .badge-info {
+    @apply bg-info-50 text-info;
+  }
+
+  .badge-muted {
+    @apply bg-slate-100 text-muted;
+  }
 }

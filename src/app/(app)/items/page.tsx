@@ -3,8 +3,8 @@ import { PointTransactionType } from "@prisma/client";
 import { Plus } from "lucide-react";
 import { createItemAction, updateItemAction } from "@/app/actions";
 import { ItemBindingFields } from "@/components/item-binding-fields";
-import { Card, EmptyState, PageHeader } from "@/components/ui";
-import { transactionTypeLabels } from "@/lib/points";
+import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
+import { transactionTypeLabels, transactionTypeTones } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
 
 const typeOptions = Object.values(PointTransactionType);
@@ -118,8 +118,8 @@ export default async function ItemsPage({
               const active = !isCreating && selectedItem?.id === item.id;
               return (
                 <Link
-                  className={`block rounded-md px-3 py-3 text-sm transition ${
-                    active ? "bg-blue-50 text-brand" : "text-slate-700 hover:bg-slate-50"
+                  className={`block rounded-lg px-3 py-3 text-sm transition ${
+                    active ? "bg-brand-50 text-brand shadow-sm" : "text-slate-700 hover:bg-slate-50"
                   }`}
                   href={makeItemsHref({ itemId: item.id, mode: undefined })}
                   key={item.id}
@@ -128,10 +128,10 @@ export default async function ItemsPage({
                     <span className="truncate font-medium">{item.name}</span>
                     <span className="shrink-0 font-semibold">{item.defaultPoints}</span>
                   </span>
-                  <span className="mt-1 flex items-center gap-2 text-xs text-muted">
-                    <span>{transactionTypeLabels[item.type]}</span>
-                    <span>{getScopeLabel(item.childId)}</span>
-                    <span>{item.enabled ? "启用" : "停用"}</span>
+                  <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <Badge tone={transactionTypeTones[item.type]}>{transactionTypeLabels[item.type]}</Badge>
+                    <span className="text-xs text-muted">{getScopeLabel(item.childId)}</span>
+                    <span className="text-xs text-muted">{item.enabled ? "启用" : "停用"}</span>
                   </span>
                 </Link>
               );
@@ -141,8 +141,8 @@ export default async function ItemsPage({
           </div>
         </Card>
         {isCreating ? (
-          <Card key="new-item">
-            <h2 className="mb-4 text-lg font-semibold">新增项目</h2>
+          <Card key="new-item" className="p-6">
+            <h2 className="mb-5 text-lg font-semibold text-ink">新增项目</h2>
             <form action={createItemAction} className="space-y-4">
               <label className="field">
                 <span className="label">类型</span>
@@ -184,17 +184,17 @@ export default async function ItemsPage({
             </form>
           </Card>
         ) : selectedItem ? (
-          <Card key={selectedItem.id}>
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <Card key={selectedItem.id} className="p-6">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-sm text-muted">{transactionTypeLabels[selectedItem.type]}</p>
-                <h2 className="mt-1 text-xl font-semibold">{selectedItem.name}</h2>
+                <Badge tone={transactionTypeTones[selectedItem.type]}>{transactionTypeLabels[selectedItem.type]}</Badge>
+                <h2 className="mt-2 text-xl font-semibold text-ink">{selectedItem.name}</h2>
               </div>
               <div className="flex gap-2">
-                <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-brand">{getScopeLabel(selectedItem.childId)}</span>
-                <span className={selectedItem.enabled ? "rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-success" : "rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-muted"}>
+                <Badge tone="brand">{getScopeLabel(selectedItem.childId)}</Badge>
+                <Badge tone={selectedItem.enabled ? "success" : "muted"}>
                   {selectedItem.enabled ? "启用" : "停用"}
-                </span>
+                </Badge>
               </div>
             </div>
             <form action={updateItemAction} className="space-y-4">
@@ -228,7 +228,7 @@ export default async function ItemsPage({
               </label>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input name="enabled" type="checkbox" defaultChecked={selectedItem.enabled} />
+                  <input className="h-4 w-4 rounded border-line text-brand focus:shadow-glow" name="enabled" type="checkbox" defaultChecked={selectedItem.enabled} />
                   启用
                 </label>
                 <p className="max-w-xl text-sm text-muted">

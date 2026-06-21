@@ -39,14 +39,14 @@ export function PointsTrendChart({ data }: { data: TrendChartData | null }) {
       </div>
       <div className="overflow-x-auto">
         <svg className="min-w-full" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="积分趋势图">
-          <line x1={paddingLeft} x2={width - paddingRight} y1={height - paddingBottom} y2={height - paddingBottom} stroke="#E4E7EC" />
-          <line x1={paddingLeft} x2={paddingLeft} y1={paddingTop} y2={height - paddingBottom} stroke="#E4E7EC" />
+          <line x1={paddingLeft} x2={width - paddingRight} y1={height - paddingBottom} y2={height - paddingBottom} stroke="#ECEAF2" />
+          <line x1={paddingLeft} x2={paddingLeft} y1={paddingTop} y2={height - paddingBottom} stroke="#ECEAF2" />
           {[maxValue, (maxValue + minValue) / 2, minValue].map((value, index) => {
             const y = height - paddingBottom - ((value - minValue) / valueRange) * (height - paddingTop - paddingBottom);
             return (
               <g key={`${value}-${index}`}>
-                <line x1={paddingLeft} x2={width - paddingRight} y1={y} y2={y} stroke="#F1F5F9" />
-                <text fill="#667085" fontSize="12" textAnchor="end" x={paddingLeft - 8} y={y + 4}>
+                <line x1={paddingLeft} x2={width - paddingRight} y1={y} y2={y} stroke="#F4F2FA" />
+                <text fill="#6B6880" fontSize="12" textAnchor="end" x={paddingLeft - 8} y={y + 4}>
                   {formatPoints(Math.round(value))}
                 </text>
               </g>
@@ -80,7 +80,7 @@ export function PointsTrendChart({ data }: { data: TrendChartData | null }) {
             const x = paddingLeft + index * xStep;
 
             return (
-              <text fill="#667085" fontSize="11" key={point.date} textAnchor="middle" x={x} y={height - 12}>
+              <text fill="#6B6880" fontSize="11" key={point.date} textAnchor="middle" x={x} y={height - 12}>
                 {point.date.slice(5)}
               </text>
             );

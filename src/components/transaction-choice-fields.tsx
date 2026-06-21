@@ -112,7 +112,7 @@ export function TransactionChoiceFields({
           return `${item.name}（${item.defaultPoints}，${item.scopeLabel}）`;
         }}
       />
-      {childId ? null : <p className="text-sm text-muted">请先选择档案，再选择可用项目。</p>}
+      {childId ? null : <p className="badge badge-info w-fit py-1">请先选择档案，再选择可用项目。</p>}
       <label className="field">
         <span className="label">实际分值</span>
         <input

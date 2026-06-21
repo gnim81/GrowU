@@ -7,6 +7,13 @@ export const transactionTypeLabels: Record<PointTransactionType, string> = {
   REWARD: "兑换"
 };
 
+/** Semantic badge tone for each transaction type, used across items/transactions/stats. */
+export const transactionTypeTones: Record<PointTransactionType, "success" | "danger" | "brand"> = {
+  BONUS: "success",
+  PENALTY: "danger",
+  REWARD: "brand"
+};
+
 export function normalizeSignedPoints(type: PointTransactionType, rawPoints: number) {
   const absolutePoints = Math.abs(Math.trunc(rawPoints));
 

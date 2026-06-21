@@ -67,7 +67,7 @@ export function ItemBindingFields({
           </select>
         </label>
       ) : null}
-      {scope === "CHILD" && !hasChildren ? <p className="text-sm text-danger">请先新增档案，再使用“仅指定档案”。</p> : null}
+      {scope === "CHILD" && !hasChildren ? <p className="badge badge-danger w-fit py-1">请先新增档案，再使用“仅指定档案”。</p> : null}
     </>
   );
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createChildAction, updateChildAction } from "@/app/actions";
-import { Card, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
 import { getChildBalance } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
 
@@ -39,15 +39,17 @@ export default async function ChildrenPage({
               const active = !isCreating && selectedChild?.id === child.id;
               return (
                 <Link
-                  className={`flex items-center justify-between gap-3 rounded-md px-3 py-3 text-sm transition ${
-                    active ? "bg-blue-50 text-brand" : "text-slate-700 hover:bg-slate-50"
+                  className={`flex items-center justify-between gap-3 rounded-lg px-3 py-3 text-sm transition ${
+                    active
+                      ? "bg-brand-50 text-brand shadow-sm"
+                      : "text-slate-700 hover:bg-slate-50"
                   }`}
                   href={`/children?childId=${child.id}`}
                   key={child.id}
                 >
                   <span className="flex min-w-0 items-center gap-3">
                     <span
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold text-white"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
                       style={{ backgroundColor: child.displayColor }}
                     >
                       {child.avatarText || child.name.slice(0, 1)}
@@ -65,8 +67,8 @@ export default async function ChildrenPage({
           </div>
         </Card>
         {isCreating ? (
-          <Card key="new-child">
-            <h2 className="mb-4 text-lg font-semibold">新增档案</h2>
+          <Card key="new-child" className="p-6">
+            <h2 className="mb-5 text-lg font-semibold text-ink">新增档案</h2>
             <form action={createChildAction} className="space-y-4">
               <label className="field">
                 <span className="label">姓名</span>
@@ -90,15 +92,15 @@ export default async function ChildrenPage({
             </form>
           </Card>
         ) : selectedChild ? (
-          <Card key={selectedChild.id}>
-            <div className="mb-4 flex items-start justify-between gap-3">
+          <Card key={selectedChild.id} className="p-6">
+            <div className="mb-5 flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-muted">当前积分</p>
-                <h2 className="mt-1 text-2xl font-semibold">{balances.get(selectedChild.id) ?? 0}</h2>
+                <p className="mt-1 text-3xl font-bold text-ink">{balances.get(selectedChild.id) ?? 0}</p>
               </div>
-              <span className={selectedChild.enabled ? "rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-success" : "rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-muted"}>
+              <Badge tone={selectedChild.enabled ? "success" : "muted"}>
                 {selectedChild.enabled ? "启用" : "停用"}
-              </span>
+              </Badge>
             </div>
             <form action={updateChildAction} className="space-y-4">
               <input name="id" type="hidden" value={selectedChild.id} />
@@ -120,7 +122,7 @@ export default async function ChildrenPage({
               </label>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input name="enabled" type="checkbox" defaultChecked={selectedChild.enabled} />
+                  <input className="h-4 w-4 rounded border-line text-brand focus:shadow-glow" name="enabled" type="checkbox" defaultChecked={selectedChild.enabled} />
                   启用
                 </label>
                 <p className="max-w-xl text-sm text-muted">

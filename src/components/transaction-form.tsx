@@ -22,8 +22,8 @@ export function TransactionForm({
   showContinueAdding?: boolean;
 }) {
   return (
-    <Card>
-      <h2 className="mb-4 text-lg font-semibold">{title}</h2>
+    <Card className="p-6">
+      <h2 className="mb-5 text-lg font-semibold text-ink">{title}</h2>
       <form action={createTransactionAction.bind(null, type)} className="space-y-4">
         <TransactionChoiceFields
           children={children}
@@ -40,11 +40,13 @@ export function TransactionForm({
         </label>
         {showContinueAdding ? (
           <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input name="continueAdding" type="checkbox" />
+            <input className="h-4 w-4 rounded border-line text-brand focus:shadow-glow" name="continueAdding" type="checkbox" />
             继续添加
           </label>
         ) : null}
-        {error === "balance" ? <p className="text-sm text-danger">当前积分不足，无法兑换。</p> : null}
+        {error === "balance" ? (
+          <p className="badge badge-danger w-full justify-center py-1.5">当前积分不足，无法兑换。</p>
+        ) : null}
         <button className="btn btn-primary w-full" type="submit">
           提交
         </button>

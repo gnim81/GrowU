@@ -1,9 +1,9 @@
 import { PointTransactionType } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { updateTransactionAction } from "@/app/actions";
-import { Card, PageHeader } from "@/components/ui";
+import { Badge, Card, PageHeader } from "@/components/ui";
 import { formatDateInput, formatDateTime, formatPoints } from "@/lib/format";
-import { transactionTypeLabels } from "@/lib/points";
+import { transactionTypeLabels, transactionTypeTones } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
 
 export default async function TransactionDetailPage({
@@ -37,13 +37,18 @@ export default async function TransactionDetailPage({
     <>
       <PageHeader title="流水详情" description="查看流水当前值，并在记录错误时修改和保留审计。" />
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-        <Card>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <Card className="p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm text-muted">{transaction.child.name}</p>
-              <h2 className="text-xl font-semibold">{transaction.itemNameSnapshot}</h2>
+              <div className="flex items-center gap-2">
+                <Badge tone={transactionTypeTones[transaction.type]}>
+                  {transactionTypeLabels[transaction.type]}
+                </Badge>
+                <span className="text-sm text-muted">{transaction.child.name}</span>
+              </div>
+              <h2 className="mt-2 text-xl font-semibold text-ink">{transaction.itemNameSnapshot}</h2>
             </div>
-            <p className={transaction.points > 0 ? "text-2xl font-semibold text-success" : "text-2xl font-semibold text-danger"}>
+            <p className={transaction.points > 0 ? "text-3xl font-bold text-success" : "text-3xl font-bold text-danger"}>
               {formatPoints(transaction.points)}
             </p>
           </div>
@@ -86,23 +91,25 @@ export default async function TransactionDetailPage({
               <span className="label">修改原因</span>
               <input className="input" name="reason" required placeholder="例如：录入分值错误" />
             </label>
-            {search.error === "balance" ? <p className="text-sm text-danger">修改后的兑换会导致积分不足，不能保存。</p> : null}
+            {search.error === "balance" ? (
+              <p className="badge badge-danger w-full justify-center py-1.5">修改后的兑换会导致积分不足，不能保存。</p>
+            ) : null}
             <button className="btn btn-primary" type="submit">
               保存修改
             </button>
           </form>
         </Card>
-        <Card>
-          <h2 className="mb-4 text-lg font-semibold">修改审计</h2>
+        <Card className="p-6">
+          <h2 className="mb-4 text-lg font-semibold text-ink">修改审计</h2>
           <div className="space-y-3">
             {transaction.revisions.map((revision) => (
-              <div className="rounded-md bg-slate-50 p-3" key={revision.id}>
+              <div className="rounded-lg border border-line bg-slate-50/60 p-3" key={revision.id}>
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-medium">{revision.reason}</p>
+                  <p className="text-sm font-medium text-ink">{revision.reason}</p>
                   <p className="shrink-0 text-xs text-muted">{formatDateTime(revision.createdAt)}</p>
                 </div>
                 <p className="mt-1 text-xs text-muted">修改人：{revision.editedByUsername}</p>
-                <pre className="mt-3 max-h-56 overflow-auto rounded-md bg-white p-3 text-xs text-slate-700">
+                <pre className="mt-3 max-h-56 overflow-auto rounded-lg bg-ink p-3 text-xs leading-relaxed text-slate-200">
                   {JSON.stringify({ before: revision.beforeData, after: revision.afterData }, null, 2)}
                 </pre>
               </div>

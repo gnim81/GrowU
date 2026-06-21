@@ -1,10 +1,10 @@
 import { PointTransactionType } from "@prisma/client";
 import Link from "next/link";
 import { DatePresetLinks } from "@/components/date-preset-links";
-import { Card, PageHeader } from "@/components/ui";
+import { Badge, Card, EmptyState, PageHeader, Stat } from "@/components/ui";
 import { parseDateRange, validateDateRange } from "@/lib/date-range";
 import { formatPoints } from "@/lib/format";
-import { transactionTypeLabels } from "@/lib/points";
+import { transactionTypeLabels, transactionTypeTones } from "@/lib/points";
 import { prisma } from "@/lib/prisma";
 
 export default async function StatsPage({
@@ -86,40 +86,43 @@ export default async function StatsPage({
           <DatePresetLinks pathname="/stats" params={{ childId: params.childId }} />
         </div>
         {!rangeValidation.ok ? (
-          <div className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-danger">{rangeValidation.error}</div>
+          <p className="badge badge-danger mt-4 w-full justify-center py-1.5">{rangeValidation.error}</p>
         ) : null}
       </Card>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <p className="text-sm text-muted">筛选范围合计</p>
-          <p className="mt-2 text-2xl font-semibold">{formatPoints(total)}</p>
-        </Card>
+      <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat label="筛选范围合计" value={formatPoints(total)} tone="brand" />
         {Object.values(PointTransactionType).map((type) => {
           const row = typeGroups.find((group) => group.type === type);
           return (
-            <Card key={type}>
-              <p className="text-sm text-muted">{transactionTypeLabels[type]}</p>
-              <p className="mt-2 text-2xl font-semibold">{formatPoints(row?._sum.points ?? 0)}</p>
-              <p className="mt-1 text-xs text-muted">{row?._count.id ?? 0} 条</p>
-            </Card>
+            <Stat
+              key={type}
+              label={transactionTypeLabels[type]}
+              value={formatPoints(row?._sum.points ?? 0)}
+              hint={`${row?._count.id ?? 0} 条`}
+              tone={transactionTypeTones[type] === "success" ? "success" : transactionTypeTones[type] === "danger" ? "danger" : "brand"}
+            />
           );
         })}
       </div>
-      <Card className="mt-4">
-        <h2 className="mb-4 text-lg font-semibold">项目汇总</h2>
+      <Card>
+        <h2 className="mb-4 text-lg font-semibold text-ink">项目汇总</h2>
         <div className="space-y-3">
-          {itemGroups.map((group) => (
-            <div className="flex items-center justify-between gap-4 border-b border-line pb-3 last:border-0 last:pb-0" key={group.itemNameSnapshot}>
-              <div>
-                <p className="font-medium">{group.itemNameSnapshot}</p>
-                <p className="text-sm text-muted">{group._count.id} 条记录</p>
+          {itemGroups.map((group) => {
+            const sum = group._sum.points ?? 0;
+            return (
+              <div className="flex items-center justify-between gap-4 border-b border-line pb-3 last:border-0 last:pb-0" key={group.itemNameSnapshot}>
+                <div className="flex items-center gap-3">
+                  <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${sum >= 0 ? "bg-success" : "bg-danger"}`} />
+                  <div>
+                    <p className="font-medium text-ink">{group.itemNameSnapshot}</p>
+                    <p className="text-sm text-muted">{group._count.id} 条记录</p>
+                  </div>
+                </div>
+                <Badge tone={sum >= 0 ? "success" : "danger"}>{formatPoints(sum)}</Badge>
               </div>
-              <p className={(group._sum.points ?? 0) >= 0 ? "font-semibold text-success" : "font-semibold text-danger"}>
-                {formatPoints(group._sum.points ?? 0)}
-              </p>
-            </div>
-          ))}
-          {itemGroups.length === 0 ? <p className="text-sm text-muted">暂无统计数据。</p> : null}
+            );
+          })}
+          {itemGroups.length === 0 ? <EmptyState title="暂无统计数据" description="调整筛选范围后再查看汇总。" /> : null}
         </div>
       </Card>
     </>

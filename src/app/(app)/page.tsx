@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowDown, ArrowUp, Gift, History, Plus } from "lucide-react";
-import { Card, EmptyState, PageHeader } from "@/components/ui";
+import { ArrowDown, ArrowUp, Gift, History, Plus, Users } from "lucide-react";
+import { Card, EmptyState, PageHeader, Stat } from "@/components/ui";
 import { formatPoints } from "@/lib/format";
 import { getChildCards } from "@/lib/points";
 
@@ -15,9 +15,12 @@ export default async function DashboardPage() {
       />
       {children.length === 0 ? (
         <EmptyState
-          title="还没有孩子档案。"
+          title="还没有孩子档案"
+          description="先添加一个孩子档案，就可以开始记录积分了。"
+          icon={Users}
           action={
             <Link className="btn btn-primary" href="/children?mode=new">
+              <Plus size={16} />
               添加档案
             </Link>
           }
@@ -29,7 +32,7 @@ export default async function DashboardPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-base font-semibold text-white"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-base font-semibold text-white shadow-md"
                     style={{ backgroundColor: child.displayColor }}
                   >
                     {child.avatarText || child.name.slice(0, 1)}
@@ -39,37 +42,35 @@ export default async function DashboardPage() {
                     <p className="text-sm text-muted">当前积分</p>
                   </div>
                 </div>
-                <p className="text-3xl font-semibold text-ink">{child.balance}</p>
+                <p className="text-3xl font-bold text-ink">{child.balance}</p>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs text-muted">今日变化</p>
-                  <p className={child.todayChange >= 0 ? "text-lg font-semibold text-success" : "text-lg font-semibold text-danger"}>
-                    {formatPoints(child.todayChange)}
-                  </p>
-                </div>
-                <div className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs text-muted">本周变化</p>
-                  <p className={child.weekChange >= 0 ? "text-lg font-semibold text-success" : "text-lg font-semibold text-danger"}>
-                    {formatPoints(child.weekChange)}
-                  </p>
-                </div>
+                <Stat
+                  label="今日变化"
+                  value={formatPoints(child.todayChange)}
+                  tone={child.todayChange >= 0 ? "success" : "danger"}
+                />
+                <Stat
+                  label="本周变化"
+                  value={formatPoints(child.weekChange)}
+                  tone={child.weekChange >= 0 ? "success" : "danger"}
+                />
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link className="btn btn-secondary" href={`/record/bonus?childId=${child.id}`}>
-                  <ArrowUp size={16} />
+                  <ArrowUp size={16} className="text-success" />
                   加分
                 </Link>
                 <Link className="btn btn-secondary" href={`/record/penalty?childId=${child.id}`}>
-                  <ArrowDown size={16} />
+                  <ArrowDown size={16} className="text-danger" />
                   减分
                 </Link>
                 <Link className="btn btn-secondary" href={`/rewards/redeem?childId=${child.id}`}>
-                  <Gift size={16} />
+                  <Gift size={16} className="text-brand" />
                   兑换
                 </Link>
                 <Link className="btn btn-secondary" href={`/transactions?childId=${child.id}`}>
-                  <History size={16} />
+                  <History size={16} className="text-info" />
                   流水
                 </Link>
               </div>
