@@ -43,29 +43,92 @@ textarea {
   .input {
     @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition;
     @apply placeholder:text-slate-400;
-    @apply hover:border-brand-100;
     @apply focus:border-brand focus:shadow-glow;
+  }
+
+  /* Only apply hover affordance on devices that truly support hover (mouse/trackpad).
+     Touch devices skip this to avoid sticky hover states after a tap. */
+  @media (hover: hover) {
+    .input:hover {
+      @apply border-brand-100;
+    }
   }
 
   select.input {
     @apply pr-8;
   }
 
+  .card-interactive {
+    @apply transition duration-200;
+    /* Press feedback: works on touch and mouse. */
+    @apply active:scale-[0.99];
+  }
+
+  @media (hover: hover) {
+    .card-interactive:hover {
+      @apply -translate-y-0.5 shadow-lg;
+    }
+  }
+
+  /* Navigation items: desktop gets hover lift, touch gets press feedback only. */
+  .nav-item-desktop {
+    @apply active:scale-[0.98];
+  }
+
+  @media (hover: hover) {
+    .nav-item-desktop:hover {
+      @apply bg-white text-brand;
+    }
+  }
+
+  .nav-item-mobile {
+    @apply active:scale-95 active:opacity-70;
+  }
+
+  /* Selectable list rows (children/items sidebar). Touch-safe hover. */
+  .list-item {
+    @apply active:scale-[0.99];
+  }
+
+  @media (hover: hover) {
+    .list-item:hover {
+      @apply bg-slate-50;
+    }
+  }
+
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition;
-    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    /* Tactile press feedback works on both mouse and touch. */
+    @apply active:scale-[0.97] active:transition-transform;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
   }
 
   .btn-primary {
-    @apply bg-brand-gradient text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:opacity-95;
+    @apply bg-brand-gradient text-white shadow-md;
   }
 
   .btn-secondary {
-    @apply border border-line bg-white text-slate-700 shadow-sm hover:border-brand-100 hover:text-brand hover:-translate-y-0.5 active:translate-y-0;
+    @apply border border-line bg-white text-slate-700 shadow-sm;
   }
 
   .btn-danger {
-    @apply bg-danger text-white shadow-md hover:bg-red-700 hover:-translate-y-0.5 active:translate-y-0;
+    @apply bg-danger text-white shadow-md;
+  }
+
+  /* Lift / color-shift effects are hover-only: desktop gets them, touch skips
+     them (no sticky artifacts) and still gets the press feedback above. */
+  @media (hover: hover) {
+    .btn-primary:hover {
+      @apply shadow-lg -translate-y-0.5;
+    }
+
+    .btn-secondary:hover {
+      @apply border-brand-100 text-brand -translate-y-0.5;
+    }
+
+    .btn-danger:hover {
+      @apply bg-red-700 -translate-y-0.5;
+    }
   }
 
   .badge {

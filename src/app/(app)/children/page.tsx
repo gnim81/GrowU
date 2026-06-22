@@ -39,10 +39,10 @@ export default async function ChildrenPage({
               const active = !isCreating && selectedChild?.id === child.id;
               return (
                 <Link
-                  className={`flex items-center justify-between gap-3 rounded-lg px-3 py-3 text-sm transition ${
+                  className={`list-item flex items-center justify-between gap-3 rounded-lg px-3 py-3 text-sm transition ${
                     active
                       ? "bg-brand-50 text-brand shadow-sm"
-                      : "text-slate-700 hover:bg-slate-50"
+                      : "text-slate-700"
                   }`}
                   href={`/children?childId=${child.id}`}
                   key={child.id}

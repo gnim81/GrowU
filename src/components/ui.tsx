@@ -14,7 +14,7 @@ export function Card({
   return (
     <section
       className={`rounded-xl border border-line bg-white p-4 shadow-soft ${
-        interactive ? "transition duration-200 hover:-translate-y-0.5 hover:shadow-lg" : ""
+        interactive ? "card-interactive" : ""
       } ${className}`}
     >
       {children}
@@ -71,7 +71,7 @@ export function EmptyState({
 
 export function TextLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link className="text-sm font-medium text-brand hover:text-brand-700" href={href}>
+    <Link className="text-sm font-medium text-brand" href={href}>
       {children}
     </Link>
   );

@@ -118,8 +118,8 @@ export default async function ItemsPage({
               const active = !isCreating && selectedItem?.id === item.id;
               return (
                 <Link
-                  className={`block rounded-lg px-3 py-3 text-sm transition ${
-                    active ? "bg-brand-50 text-brand shadow-sm" : "text-slate-700 hover:bg-slate-50"
+                  className={`list-item block rounded-lg px-3 py-3 text-sm transition ${
+                    active ? "bg-brand-50 text-brand shadow-sm" : "text-slate-700"
                   }`}
                   href={makeItemsHref({ itemId: item.id, mode: undefined })}
                   key={item.id}

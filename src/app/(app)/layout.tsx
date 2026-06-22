@@ -14,10 +14,10 @@ const navItems = [
 
 const adminNavItems = [{ href: "/settings/accounts", label: "账号", icon: Shield }];
 
-const desktopItemClass = "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-brand";
+const desktopItemClass = "nav-item-desktop flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition";
 const desktopActiveClass = "bg-brand-50 text-brand shadow-sm";
-const mobileItemClass = "flex min-w-16 flex-1 flex-col items-center gap-1 px-2 py-2 text-xs text-slate-500 transition";
-const mobileActiveClass = "text-brand";
+const mobileItemClass = "nav-item-mobile relative flex min-w-16 flex-1 flex-col items-center gap-1 px-2 py-2 text-xs text-slate-500 transition";
+const mobileActiveClass = "text-brand before:absolute before:top-0 before:h-0.5 before:w-6 before:rounded-full before:bg-brand";
 
 export const dynamic = "force-dynamic";
 
