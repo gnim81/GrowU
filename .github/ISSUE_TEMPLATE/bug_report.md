@@ -32,7 +32,3 @@ Describe what you expected to happen instead.
 # Logs or screenshots
 
 Add relevant logs, stack traces, or screenshots. Remove secrets, credentials, and personal data before submitting.
-
-# Translation Prompt
-
-For a Simplified Chinese translation, translate this template accurately, keep field names and technical identifiers precise, preserve the Markdown headings, and keep the security-reporting warning intact.

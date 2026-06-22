@@ -125,7 +125,3 @@ Do not attempt rollback without a database backup if schema or account data chan
 - at least one enabled admin remains
 - transactions, CSV export, and historical data still look correct
 - `GROWU_ACCOUNTS` has been removed after a successful import
-
-## Translation Prompt
-
-Translate this document into Simplified Chinese for public upgrade documentation. Keep Markdown structure, command lines, filenames, environment variable names, and route paths unchanged. Preserve the exact upgrade order, the one-time legacy import guidance, the explicit `DATABASE_URL` warning, and the rollback instructions.

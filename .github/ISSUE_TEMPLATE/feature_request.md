@@ -21,7 +21,3 @@ Describe any alternative approaches, workarounds, or tradeoffs you considered.
 # Who benefits
 
 Describe who benefits from this change and why.
-
-# Translation Prompt
-
-For a Simplified Chinese translation, translate this template accurately, keep the section intent intact, and preserve the Markdown headings.

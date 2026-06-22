@@ -88,7 +88,3 @@ If you want to test the production build locally:
 npm run build
 npm run start
 ```
-
-## Translation Prompt
-
-Translate this document into Simplified Chinese for public local development documentation. Keep Markdown structure, commands, filenames, environment variable names, and route paths unchanged. Preserve the warnings about generating your own passwords, URL-encoding database credentials when needed, and using `AUTH_COOKIE_SECURE=false` for local HTTP or LAN testing.

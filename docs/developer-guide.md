@@ -162,7 +162,3 @@ In linked worktrees, the effective exclude file may live in the common Git direc
 - Prefer extending existing helpers over duplicating business rules in page components.
 - Keep data-retention rules intact unless the product explicitly changes them.
 - When documenting or changing auth, reflect the current `UserAccount` model rather than the legacy environment-based import path.
-
-## Translation Prompt
-
-Translate this document into Simplified Chinese for public contributor and maintainer documentation. Keep Markdown headings, code blocks, filenames, schema names, type names, environment variable names, role names such as `ADMIN` and `PARENT`, code identifiers, and route paths unchanged. Preserve the architectural and business-rule emphasis, especially the disable-only lifecycle, transaction snapshots, revision audit trail, and admin-account guard.

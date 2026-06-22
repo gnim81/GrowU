@@ -4,8 +4,6 @@
 
 GrowU is a simple positive-reinforcement progress and points tracker for children. Parents or guardians can manage children, define point items, record bonus or penalty events, redeem rewards, review transaction history, and export CSV reports without losing historical data.
 
-This repository is an English draft for public release. The maintainer plans to publish translated Chinese documentation later.
-
 ## Features
 
 - Database-backed user accounts with roles and account management
@@ -102,7 +100,3 @@ On a new database, visit `/setup` first to create the initial admin account.
 - Admin account management is available at `/settings/accounts`.
 - Keep at least one enabled admin account at all times.
 - Legacy environment-defined accounts are only for upgrade import through `GROWU_ACCOUNTS` and `npm run migrate:legacy-accounts`.
-
-## Translation Prompt
-
-Translate this document into Simplified Chinese for a public GitHub README. Keep Markdown structure, code blocks, paths, URLs, environment variable names, and route paths unchanged. Preserve the release-ready tone, and translate prose naturally for maintainers and self-hosting users in China.

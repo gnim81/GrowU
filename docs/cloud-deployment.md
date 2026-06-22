@@ -305,7 +305,3 @@ If `/setup` redirects away, at least one account already exists. Sign in at `/lo
 ### Login fails after an upgrade import
 
 If you intentionally used `GROWU_ACCOUNTS` for an upgrade, verify the import steps in [docs/upgrading.md](docs/upgrading.md), then remove `GROWU_ACCOUNTS` after the import succeeds.
-
-## Translation Prompt
-
-Translate this document into Simplified Chinese for public server deployment documentation. Keep all Markdown structure, code blocks, filenames, paths, commands, environment variable names, and route paths unchanged. Preserve the warnings about placeholder values, URL-encoding passwords, `/setup`, and the fact that `GROWU_ACCOUNTS` is only for upgrades.

@@ -22,7 +22,3 @@ Include the following details in your report:
 - Expected impact, including data exposure, privilege escalation, or service disruption risk
 
 Please share only the minimum data needed to reproduce the issue safely.
-
-## Translation Prompt
-
-For a Simplified Chinese translation, translate this document accurately, keep technical terms precise, preserve Markdown structure, and do not convert the reporting guidance into a public-issue workflow. Keep GitHub feature names such as private vulnerability reporting and security advisory recognizable.

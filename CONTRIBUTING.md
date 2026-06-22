@@ -44,7 +44,3 @@ Do not include any of the following in commits, issues, pull requests, screensho
 - Generated tool artifacts that are not intended for the public repository
 
 If you are unsure whether something is safe to publish, remove it first. For suspected vulnerabilities, follow `SECURITY.md` instead of opening a public issue.
-
-## Translation Prompt
-
-For a Simplified Chinese translation, translate this document accurately, keep command names unchanged, preserve Markdown structure, and retain all safety warnings, including the pointer to `SECURITY.md` for suspected vulnerabilities.

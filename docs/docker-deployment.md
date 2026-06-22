@@ -169,7 +169,3 @@ Check:
 - the database does not already contain accounts
 
 If accounts already exist, the import is intentionally skipped.
-
-## Translation Prompt
-
-Translate this document into Simplified Chinese for public self-hosting documentation. Keep Markdown headings, code blocks, command lines, filenames, environment variable names, and route paths unchanged. Preserve all operational warnings, especially the notes about explicit `DATABASE_URL`, URL-encoding passwords, and replacing placeholder secrets.

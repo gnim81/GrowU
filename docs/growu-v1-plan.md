@@ -140,7 +140,3 @@ Rules:
 - The project should remain deployable with Node.js plus PostgreSQL
 - Docker deployment should remain supported through the included `Dockerfile` and `compose.yaml`
 - Environment configuration must use explicit `DATABASE_URL`, `AUTH_SECRET`, and related runtime settings
-
-## Translation Prompt
-
-Translate this document into Simplified Chinese for public product-planning documentation. Keep Markdown structure, schema names, role names such as `ADMIN` and `PARENT`, code identifiers, environment variable names, and route paths unchanged. Preserve the distinction between current database-backed accounts and legacy upgrade-only `GROWU_ACCOUNTS`, along with the acceptance criteria and data-retention rules.
