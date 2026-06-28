@@ -18,6 +18,23 @@
 - 通过 `TransactionRevision` 记录交易编辑历史
 - CSV 导出交易数据，导出的文件中中文内容可正常阅读
 
+## 界面预览
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/login.png" alt="登录页"><br><sub>登录页 — 渐变背景与玻璃质感卡片</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/dashboard.png" alt="首页"><br><sub>首页 — 积分余额与快捷操作</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/record-bonus.png" alt="记录加分"><br><sub>记录加分 — 标签式选择器</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/children.png" alt="孩子档案"><br><sub>档案管理 — 左右分栏式布局</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/transactions.png" alt="流水回溯"><br><sub>流水回溯 — 趋势图与历史记录</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/stats.png" alt="统计"><br><sub>统计 — 汇总数据</sub></td>
+  </tr>
+</table>
+
 ## 技术栈
 
 - Next.js App Router

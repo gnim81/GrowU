@@ -16,6 +16,23 @@ GrowU is a simple positive-reinforcement progress and points tracker for childre
 - Transaction edit history through `TransactionRevision`
 - CSV export for transaction data, including readable Chinese content when exported
 
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/login.png" alt="Login page"><br><sub>Login — gradient background with glass card</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/dashboard.png" alt="Dashboard"><br><sub>Dashboard — balances and quick actions</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/record-bonus.png" alt="Record bonus"><br><sub>Record bonus — tag-based picker</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/children.png" alt="Child profiles"><br><sub>Profiles — master-detail management</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><img src="docs/screenshots/transactions.png" alt="Transactions"><br><sub>Transactions — trend chart and history</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/stats.png" alt="Statistics"><br><sub>Statistics — aggregated summaries</sub></td>
+  </tr>
+</table>
+
 ## Stack
 
 - Next.js App Router
