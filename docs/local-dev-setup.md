@@ -48,9 +48,19 @@ That setting is also useful for mobile or LAN testing over HTTP. If you later te
 
 ## 4. Install Dependencies
 
+This project pins exact dependency versions in `package.json` (no `^` ranges) and ships a committed `package-lock.json`. Install dependencies with one of the commands below — both respect the locked versions.
+
 ```bash
-npm install
+npm ci        # recommended: installs exactly what the lock file records
+# or
+npm install   # also fine; npm respects the committed lock file by default
 ```
+
+> **Do not run `npm install <package>@latest` or `npm update`.** Dependencies are pinned to versions this project is built and tested against. Upgrading a major version (for example `tailwindcss` v3 → v4, or `next` 15 → 16) will break the build because the code is written for the pinned major versions. If you genuinely need to upgrade, treat it as a dedicated migration task and update the lock file deliberately.
+
+### Node.js version
+
+The project targets Node.js 24 (see `.nvmrc`). If you use a Node version manager, run `nvm use` to switch to the expected version before installing dependencies.
 
 ## 5. Apply Database Migrations
 
